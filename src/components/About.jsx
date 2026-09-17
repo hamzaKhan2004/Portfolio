@@ -34,9 +34,9 @@ export default function About() {
     <section id="about" className="section-spacing border-b border-[var(--border)] relative bg-[var(--background)]">
       <div className="editorial-container">
         {/* Section Header */}
-        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between mb-16 gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4" style={{ marginBottom: "64px" }}>
           <div>
-            <span className="font-mono text-xs uppercase tracking-widest text-[var(--accent)] block mb-2">
+            <span className="font-mono text-xs uppercase tracking-widest text-[var(--accent)] block" style={{ marginBottom: "8px" }}>
               // 02 • ABOUT & CAPABILITIES
             </span>
             <h2 className="font-sans font-bold text-3xl sm:text-5xl text-[var(--foreground)] tracking-tight">
@@ -51,9 +51,9 @@ export default function About() {
         {/* 2-Column Layout: Strengths on Left, ID Card Landing Dock on Right */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-14 lg:gap-20 items-start">
           {/* Left Column: Concise Narrative & 4 Strengths */}
-          <div className="lg:col-span-7 space-y-10">
+          <div className="lg:col-span-7 flex flex-col gap-10">
             {/* Concise Core Statement */}
-            <div className="space-y-4">
+            <div className="flex flex-col gap-4">
               <p className="text-xl sm:text-2xl text-[var(--foreground)] font-medium leading-snug">
                 Computer Engineering graduate and MERN Stack Developer based in Mumbai.
               </p>
@@ -63,22 +63,23 @@ export default function About() {
             </div>
 
             {/* 4 Consistent Core Strengths in a 2-Column Grid on Desktop, 1 Column on Mobile */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6" style={{ paddingTop: "16px" }}>
               {CORE_STRENGTHS.map((item) => {
                 const IconComponent = item.icon;
                 return (
                   <div
                     key={item.num}
-                    className="p-6 rounded-xl border border-[var(--border)] bg-[var(--surface)]/50 hover:border-[var(--border-strong)] transition-all group flex flex-col justify-between min-h-[190px]"
+                    className="rounded-xl border border-[var(--border)] bg-[var(--surface)]/50 hover:border-[var(--border-strong)] transition-all group flex flex-col justify-between min-h-[190px]"
+                    style={{ padding: "24px" }}
                   >
                     <div>
-                      <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center justify-between" style={{ marginBottom: "16px" }}>
                         <IconComponent size={20} className="text-[var(--accent)]" />
                         <span className="font-mono text-xs text-[var(--dim)]">
                           {item.num} // DOMAIN
                         </span>
                       </div>
-                      <h3 className="font-sans font-semibold text-lg text-[var(--foreground)] group-hover:text-[var(--accent)] transition-colors mb-2">
+                      <h3 className="font-sans font-semibold text-lg text-[var(--foreground)] group-hover:text-[var(--accent)] transition-colors" style={{ marginBottom: "8px" }}>
                         {item.title}
                       </h3>
                       <p className="font-sans text-sm text-[var(--muted)] leading-relaxed">
@@ -91,7 +92,7 @@ export default function About() {
             </div>
 
             {/* Concise Education & Location Badge */}
-            <div className="flex flex-wrap items-center gap-6 pt-4 border-t border-[var(--border)] font-mono text-xs text-[var(--muted)]">
+            <div className="flex flex-wrap items-center gap-6 border-t border-[var(--border)] font-mono text-xs text-[var(--muted)]" style={{ paddingTop: "16px" }}>
               <div className="flex items-center gap-2">
                 <GraduationCap size={15} className="text-[var(--accent)]" />
                 <span>B.E. IN COMPUTER ENGINEERING</span>
@@ -108,12 +109,13 @@ export default function About() {
           <div className="hidden lg:flex lg:col-span-5 justify-center lg:justify-end">
             <div
               id="about-card-target"
-              className="w-[290px] sm:w-[325px] h-[480px] rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface)]/20 p-6 flex flex-col items-center justify-center text-center relative pointer-events-none"
+              className="w-[290px] sm:w-[325px] h-[480px] rounded-2xl border border-dashed border-[var(--border)] bg-[var(--surface)]/20 flex flex-col items-center justify-center text-center relative pointer-events-none"
+              style={{ padding: "24px" }}
             >
               <span className="font-mono text-xs text-[var(--dim)] tracking-wider">
                 [ ID CARD DOCKING ZONE ]
               </span>
-              <span className="font-mono text-[10px] text-[var(--muted)] mt-1">
+              <span className="font-mono text-[10px] text-[var(--muted)]" style={{ marginTop: "4px" }}>
                 TRANSFERS MOMENTUM ON SCROLL
               </span>
             </div>

@@ -1,8 +1,8 @@
-import React, { useRef, useEffect } from 'react';
-import { profile } from '../data/portfolioData';
-import { MapPin } from 'lucide-react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import React, { useRef, useEffect } from "react";
+import { profile } from "../data/portfolioData";
+import { MapPin } from "lucide-react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -20,7 +20,7 @@ export default function IdCard() {
     const glare = glareRef.current;
     if (!container || !card || !lanyard) return;
 
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const isMobile = window.innerWidth < 1024;
 
     // 1. Caching card bounding box to avoid layout thrashing on mousemove
@@ -28,7 +28,7 @@ export default function IdCard() {
       boundsRef.current = card.getBoundingClientRect();
     };
     updateBounds();
-    window.addEventListener('resize', updateBounds, { passive: true });
+    window.addEventListener("resize", updateBounds, { passive: true });
 
     // 2. Harmonic Pendulum Physics with Ambient Hanging Motion
     let angle = 0;
@@ -59,7 +59,10 @@ export default function IdCard() {
 
       // Impart physical momentum based on cursor velocity
       const mouseSpeedX = dx / dt;
-      angleVelocity += Math.max(-2.2, Math.min(2.2, mouseSpeedX * FORCE_FACTOR * 8));
+      angleVelocity += Math.max(
+        -2.2,
+        Math.min(2.2, mouseSpeedX * FORCE_FACTOR * 8),
+      );
 
       // Specular sheen & subtle 3D tilt
       const relX = (e.clientX - centerX) / (window.innerWidth * 0.45);
@@ -79,20 +82,23 @@ export default function IdCard() {
       targetTiltX = 0;
       targetTiltY = 0;
       if (glare) {
-        glare.style.background = 'transparent';
+        glare.style.background = "transparent";
       }
     };
 
-    window.addEventListener('mousemove', handleMouseMove, { passive: true });
-    container.addEventListener('mouseenter', updateBounds, { passive: true });
-    container.addEventListener('mouseleave', handleMouseLeave, { passive: true });
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    container.addEventListener("mouseenter", updateBounds, { passive: true });
+    container.addEventListener("mouseleave", handleMouseLeave, {
+      passive: true,
+    });
 
     // Continuous Physics Loop with Natural Ambient Sway
     const physicsLoop = () => {
       const now = performance.now();
 
       // Ambient subtle sway simulating real-world air suspended hanging motion
-      const ambientSway = Math.sin(now * 0.0016) * 1.5 + Math.sin(now * 0.0032) * 0.4;
+      const ambientSway =
+        Math.sin(now * 0.0016) * 1.5 + Math.sin(now * 0.0032) * 0.4;
 
       // Harmonic spring force
       const springForce = -SPRING_K * angle;
@@ -121,30 +127,30 @@ export default function IdCard() {
 
     if (!isMobile) {
       const calculateDeltas = () => {
-        const aboutDock = document.getElementById('about-card-target');
+        const aboutDock = document.getElementById("about-card-target");
         if (!aboutDock || !container) return { deltaX: 0, deltaY: 0 };
 
-        const currentX = gsap.getProperty(container, 'x') || 0;
-        const currentY = gsap.getProperty(container, 'y') || 0;
+        const currentX = gsap.getProperty(container, "x") || 0;
+        const currentY = gsap.getProperty(container, "y") || 0;
 
         const sRect = container.getBoundingClientRect();
         const tRect = aboutDock.getBoundingClientRect();
 
         return {
           deltaX: tRect.left - (sRect.left - currentX),
-          deltaY: tRect.top - (sRect.top - currentY)
+          deltaY: tRect.top - (sRect.top - currentY),
         };
       };
 
       const setupScrollTravel = () => {
-        const aboutDock = document.getElementById('about-card-target');
+        const aboutDock = document.getElementById("about-card-target");
         if (!aboutDock || !container) return;
 
         scrollTriggerInstance = ScrollTrigger.create({
-          trigger: '#home',
-          start: 'top top',
-          endTrigger: '#about',
-          end: 'center center',
+          trigger: "#home",
+          start: "top top",
+          endTrigger: "#about",
+          end: "center center",
           scrub: 1.2,
           invalidateOnRefresh: true,
           animation: gsap.to(container, {
@@ -152,38 +158,41 @@ export default function IdCard() {
             y: () => calculateDeltas().deltaY,
             rotation: -3,
             scale: 0.98,
-            ease: 'power1.inOut'
+            ease: "power1.inOut",
           }),
           onUpdate: (self) => {
             // Scroll momentum transfers to card physics
             const velocity = self.getVelocity();
             if (Math.abs(velocity) > 20) {
-              angleVelocity += Math.max(-1.8, Math.min(1.8, velocity * 0.00035));
+              angleVelocity += Math.max(
+                -1.8,
+                Math.min(1.8, velocity * 0.00035),
+              );
             }
-          }
+          },
         });
       };
 
       const timer = setTimeout(setupScrollTravel, 250);
-      ScrollTrigger.addEventListener('refreshInit', updateBounds);
+      ScrollTrigger.addEventListener("refreshInit", updateBounds);
 
       return () => {
         clearTimeout(timer);
-        window.removeEventListener('mousemove', handleMouseMove);
-        window.removeEventListener('resize', updateBounds);
-        container.removeEventListener('mouseenter', updateBounds);
-        container.removeEventListener('mouseleave', handleMouseLeave);
+        window.removeEventListener("mousemove", handleMouseMove);
+        window.removeEventListener("resize", updateBounds);
+        container.removeEventListener("mouseenter", updateBounds);
+        container.removeEventListener("mouseleave", handleMouseLeave);
         if (animFrameId) cancelAnimationFrame(animFrameId);
         if (scrollTriggerInstance) scrollTriggerInstance.kill();
-        ScrollTrigger.removeEventListener('refreshInit', updateBounds);
+        ScrollTrigger.removeEventListener("refreshInit", updateBounds);
       };
     }
 
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('resize', updateBounds);
-      container.removeEventListener('mouseenter', updateBounds);
-      container.removeEventListener('mouseleave', handleMouseLeave);
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("resize", updateBounds);
+      container.removeEventListener("mouseenter", updateBounds);
+      container.removeEventListener("mouseleave", handleMouseLeave);
       if (animFrameId) cancelAnimationFrame(animFrameId);
     };
   }, []);
@@ -192,33 +201,54 @@ export default function IdCard() {
     <div
       ref={containerRef}
       id="hero-id-card-wrapper"
-      className="relative flex flex-col items-center justify-start select-none py-2 z-30"
-      style={{ perspective: '1200px' }}
+      className="relative flex flex-col items-center justify-start select-none z-30"
+      style={{
+        perspective: "1200px",
+        paddingTop: "8px",
+        paddingBottom: "8px",
+      }}
       aria-label="Hamza Akil Khan interactive physical identity card"
     >
       {/* Lanyard Ribbon hanging from top */}
       <div
         ref={lanyardRef}
         className="w-4 h-20 sm:h-24 bg-gradient-to-b from-[var(--surface-hover)] to-[var(--surface)] border-x border-[var(--border)] relative origin-top transition-transform duration-75"
-        style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.25)', transformOrigin: 'top center' }}
+        style={{
+          boxShadow: "0 4px 12px rgba(0,0,0,0.25)",
+          transformOrigin: "top center",
+        }}
       >
         <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-[1px] bg-[var(--border-strong)]" />
       </div>
 
       {/* Metallic Clip Hook */}
-      <div className="relative z-10 -mt-1 flex flex-col items-center">
+      <div
+        className="relative z-10 flex flex-col items-center"
+        style={{
+          marginTop: "-4px",
+        }}
+      >
         <div className="w-5 h-5 rounded-full border-2 border-[var(--muted)]/60 bg-[var(--surface)] shadow-sm" />
-        <div className="w-8 h-4 bg-gradient-to-b from-[#8a909a] to-[#4a505a] rounded-sm -mt-2 border border-white/20 shadow-md" />
+
+        <div
+          className="w-8 h-4 bg-gradient-to-b from-[#8a909a] to-[#4a505a] rounded-sm border border-white/20 shadow-md"
+          style={{
+            marginTop: "-8px",
+          }}
+        />
       </div>
 
       {/* Physical Identity Card */}
       <div
         ref={cardRef}
-        className="relative -mt-2 w-[290px] sm:w-[325px] rounded-2xl bg-[var(--surface)] border border-[var(--border-strong)] shadow-2xl p-6 sm:p-7 origin-top overflow-hidden transition-shadow duration-300"
+        className="relative w-[290px] sm:w-[325px] rounded-2xl bg-[var(--surface)] border border-[var(--border-strong)] shadow-2xl origin-top overflow-hidden transition-shadow duration-300"
         style={{
-          boxShadow: '0 30px 60px -15px rgba(0, 0, 0, 0.5), 0 0 1px 1px var(--border)',
-          transformStyle: 'preserve-3d',
-          transformOrigin: 'top center'
+          boxShadow:
+            "0 30px 60px -15px rgba(0, 0, 0, 0.5), 0 0 1px 1px var(--border)",
+          transformStyle: "preserve-3d",
+          transformOrigin: "top center",
+          marginTop: "-8px",
+          padding: "24px",
         }}
       >
         {/* Specular Glare Layer */}
@@ -229,21 +259,49 @@ export default function IdCard() {
         />
 
         {/* Top Punch Hole */}
-        <div className="w-9 h-2.5 rounded-full mx-auto mb-5 bg-[var(--background)] border border-[var(--border)] shadow-inner" />
+        <div
+          className="w-9 h-2.5 rounded-full mx-auto bg-[var(--background)] border border-[var(--border)] shadow-inner"
+          style={{
+            marginLeft: "auto",
+            marginRight: "auto",
+            marginBottom: "20px",
+          }}
+        />
 
         {/* Card Header: Monogram & Verified Badge */}
-        <div className="flex items-center justify-between pb-3.5 border-b border-[var(--border)]">
-          <div className="flex items-center gap-2">
+        <div
+          className="flex items-center justify-between border-b border-[var(--border)]"
+          style={{
+            paddingBottom: "14px",
+          }}
+        >
+          <div
+            className="flex items-center"
+            style={{
+              gap: "8px",
+            }}
+          >
             <span className="font-sans font-bold text-sm tracking-tight text-[var(--foreground)]">
               {profile.initials}
             </span>
+
             <span className="font-mono text-[10px] text-[var(--dim)] tracking-wider">
               // CREATIVE TECH
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-[var(--accent-dim)] border border-[var(--accent)]/35">
+          <div
+            className="flex items-center rounded bg-[var(--accent-dim)] border border-[var(--accent)]/35"
+            style={{
+              gap: "6px",
+              paddingLeft: "10px",
+              paddingRight: "10px",
+              paddingTop: "2px",
+              paddingBottom: "2px",
+            }}
+          >
             <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-pulse" />
+
             <span className="font-mono text-[10px] font-semibold text-[var(--accent)] tracking-wider">
               VERIFIED
             </span>
@@ -251,13 +309,20 @@ export default function IdCard() {
         </div>
 
         {/* Portrait Photo with Balanced Crop & Padding */}
-        <div className="my-5 relative overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--background)] shadow-sm">
+        <div
+          className="relative overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--background)] shadow-sm"
+          style={{
+            marginTop: "20px",
+            marginBottom: "20px",
+          }}
+        >
           <img
             src={profile.avatarUrl}
             alt="Hamza Akil Khan"
             className="w-full h-56 object-cover object-center filter grayscale contrast-105 hover:grayscale-0 transition-all duration-500"
             loading="eager"
           />
+
           <div className="absolute inset-0 bg-gradient-to-t from-[var(--surface)]/70 via-transparent to-transparent pointer-events-none" />
         </div>
 
@@ -267,25 +332,56 @@ export default function IdCard() {
             <h3 className="font-sans font-semibold text-xl text-[var(--foreground)] tracking-tight">
               {profile.name}
             </h3>
+
             <p className="font-mono text-xs text-[var(--accent)] font-medium tracking-wide">
               {profile.role}
             </p>
           </div>
 
-          <div className="flex items-center justify-between text-xs text-[var(--muted)] pt-1 border-t border-[var(--border)]">
-            <span className="inline-flex items-center gap-1.5 font-mono text-[11px] pt-1">
+          <div
+            className="flex items-center justify-between text-xs text-[var(--muted)] border-t border-[var(--border)]"
+            style={{
+              paddingTop: "4px",
+            }}
+          >
+            <span
+              className="inline-flex items-center font-mono text-[11px]"
+              style={{
+                gap: "6px",
+                paddingTop: "4px",
+              }}
+            >
               <MapPin size={11} className="text-[var(--accent)]" />
+
               {profile.location}
             </span>
-            <span className="font-mono text-[11px] text-[var(--dim)] pt-1">
+
+            <span
+              className="font-mono text-[11px] text-[var(--dim)]"
+              style={{
+                paddingTop: "4px",
+              }}
+            >
               B.E. // GRAD
             </span>
           </div>
         </div>
 
         {/* Barcode Identifier */}
-        <div className="mt-4 pt-3 border-t border-[var(--border)] flex items-center justify-between">
-          <div className="flex items-end gap-[2px] h-4" aria-hidden="true">
+        <div
+          className="border-t border-[var(--border)] flex items-center justify-between"
+          style={{
+            marginTop: "16px",
+            paddingTop: "12px",
+          }}
+        >
+          <div
+            className="flex items-end h-4"
+            style={{
+              gap: "2px",
+            }}
+            aria-hidden="true"
+          >
             <span className="w-[1.5px] h-full bg-[var(--muted)]" />
             <span className="w-[3px] h-3 bg-[var(--muted)]" />
             <span className="w-[1px] h-full bg-[var(--muted)]" />
@@ -297,6 +393,7 @@ export default function IdCard() {
             <span className="w-[1px] h-2 bg-[var(--muted)]" />
             <span className="w-[3px] h-full bg-[var(--muted)]" />
           </div>
+
           <span className="font-mono text-[10px] text-[var(--dim)] tracking-widest">
             HK-2026-DEV
           </span>

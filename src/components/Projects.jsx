@@ -47,9 +47,9 @@ export default function Projects({ onSelectProject }) {
     <section id="work" className="section-spacing border-b border-[var(--border)] relative bg-[var(--background)]">
       <div className="editorial-container">
         {/* Section Header */}
-        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between mb-16 gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4" style={{ marginBottom: "64px" }}>
           <div>
-            <span className="font-mono text-xs uppercase tracking-widest text-[var(--accent)] block mb-2">
+            <span className="font-mono text-xs uppercase tracking-widest text-[var(--accent)] block" style={{ marginBottom: "8px" }}>
               // 03 • PRODUCTION ARCHITECTURES
             </span>
             <h2 className="font-sans font-bold text-3xl sm:text-5xl text-[var(--foreground)] tracking-tight">
@@ -71,9 +71,10 @@ export default function Projects({ onSelectProject }) {
                 key={proj.id}
                 onMouseEnter={() => setHoveredProject(proj)}
                 onMouseLeave={() => setHoveredProject(null)}
-                className={`group py-12 sm:py-14 transition-colors duration-300 ${
+                className={`group transition-colors duration-300 ${
                   isHovered ? 'bg-[var(--surface)]/35' : 'bg-transparent'
                 }`}
+                style={{ paddingTop: "48px", paddingBottom: "48px" }}
               >
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-start">
                   {/* Number */}
@@ -84,7 +85,7 @@ export default function Projects({ onSelectProject }) {
                   </div>
 
                   {/* Project Details (Scoped to col-span-7 so text is never overlapped) */}
-                  <div className="lg:col-span-7 space-y-4">
+                  <div className="lg:col-span-7 flex flex-col gap-4">
                     <h3
                       onClick={() => onSelectProject(proj)}
                       className="font-sans font-semibold text-2xl sm:text-4xl text-[var(--foreground)] tracking-tight hover:text-[var(--accent)] transition-colors cursor-pointer inline-flex items-center gap-2"
@@ -101,12 +102,12 @@ export default function Projects({ onSelectProject }) {
                     </p>
 
                     {/* Dot-separated tech list */}
-                    <div className="font-mono text-xs sm:text-sm text-[var(--dim)] tracking-wide pt-1">
+                    <div className="font-mono text-xs sm:text-sm text-[var(--dim)] tracking-wide" style={{ paddingTop: "4px" }}>
                       {proj.tags.join('   ·   ')}
                     </div>
 
                     {/* Mobile Project Image Frame (clean fallback for touch) */}
-                    <div className="block lg:hidden mt-5 rounded-xl overflow-hidden border border-[var(--border)]">
+                    <div className="block lg:hidden rounded-xl overflow-hidden border border-[var(--border)]" style={{ marginTop: "20px" }}>
                       <img
                         src={proj.image}
                         alt={proj.title}
@@ -117,13 +118,14 @@ export default function Projects({ onSelectProject }) {
                   </div>
 
                   {/* External Links & Deep Dive Trigger */}
-                  <div className="lg:col-span-4 flex flex-wrap lg:flex-col lg:items-end gap-3.5 pt-2">
+                  <div className="lg:col-span-4 flex flex-wrap lg:flex-col lg:items-end gap-3.5" style={{ paddingTop: "8px" }}>
                     {proj.demoLink && (
                       <MagneticButton
                         href={proj.demoLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 font-mono text-xs text-[var(--foreground)] hover:text-[var(--accent)] transition-colors px-3.5 py-2 rounded border border-[var(--border)] hover:border-[var(--accent)]"
+                        className="inline-flex items-center gap-1.5 font-mono text-xs text-[var(--foreground)] hover:text-[var(--accent)] transition-colors rounded border border-[var(--border)] hover:border-[var(--accent)]"
+                        style={{ paddingLeft: "14px", paddingRight: "14px", paddingTop: "8px", paddingBottom: "8px" }}
                       >
                         <ExternalLink size={12} className="text-[var(--accent)]" />
                         <span>LIVE APPLICATION</span>
@@ -135,7 +137,8 @@ export default function Projects({ onSelectProject }) {
                         href={proj.repoLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 font-mono text-xs text-[var(--muted)] hover:text-[var(--foreground)] transition-colors px-3.5 py-2 rounded border border-[var(--border)] hover:border-[var(--foreground)]"
+                        className="inline-flex items-center gap-1.5 font-mono text-xs text-[var(--muted)] hover:text-[var(--foreground)] transition-colors rounded border border-[var(--border)] hover:border-[var(--foreground)]"
+                        style={{ paddingLeft: "14px", paddingRight: "14px", paddingTop: "8px", paddingBottom: "8px" }}
                       >
                         <Github size={12} />
                         <span>REPOSITORY</span>
@@ -145,7 +148,8 @@ export default function Projects({ onSelectProject }) {
                     <button
                       type="button"
                       onClick={() => onSelectProject(proj)}
-                      className="inline-flex items-center gap-1.5 font-mono text-xs text-[var(--accent)] hover:underline cursor-pointer pt-2"
+                      className="inline-flex items-center gap-1.5 font-mono text-xs text-[var(--accent)] hover:underline cursor-pointer"
+                      style={{ paddingTop: "8px" }}
                     >
                       <Layers size={13} />
                       <span>DEEP DIVE</span>
@@ -168,7 +172,7 @@ export default function Projects({ onSelectProject }) {
         aria-hidden="true"
       >
         {hoveredProject && (
-          <div className="w-[340px] rounded-xl overflow-hidden border border-[var(--border-strong)] bg-[var(--surface)] shadow-2xl p-3">
+          <div className="w-[340px] rounded-xl overflow-hidden border border-[var(--border-strong)] bg-[var(--surface)] shadow-2xl" style={{ padding: "12px" }}>
             <div className="relative aspect-[16/10] overflow-hidden rounded-lg bg-[var(--background)]">
               <img
                 src={hoveredProject.image}
@@ -176,7 +180,7 @@ export default function Projects({ onSelectProject }) {
                 className="w-full h-full object-cover object-top"
               />
             </div>
-            <div className="mt-3 px-1 flex items-center justify-between font-mono text-xs">
+            <div className="flex items-center justify-between font-mono text-xs" style={{ marginTop: "12px", paddingLeft: "4px", paddingRight: "4px" }}>
               <span className="text-[var(--foreground)] font-semibold truncate max-w-[200px]">
                 {hoveredProject.title}
               </span>

@@ -44,7 +44,7 @@ export default function Contact() {
         <div className="contact-editorial-box">
           <div className="contact-left">
             <span className="contact-avail font-mono text-xs">
-              <span className="status-indicator-dot mr-2 inline-block" />
+              <span className="status-indicator-dot inline-block" style={{ marginRight: "8px" }} />
               STATUS: OPEN TO FULL-TIME & CONTRACT ROLES
             </span>
 
@@ -73,12 +73,12 @@ export default function Contact() {
                 >
                   {copied ? (
                     <>
-                      <Check size={14} className="text-accent mr-1" />
+                      <Check size={14} className="text-accent" style={{ marginRight: "4px" }} />
                       COPIED!
                     </>
                   ) : (
                     <>
-                      <Copy size={14} className="mr-1" />
+                      <Copy size={14} style={{ marginRight: "4px" }} />
                       COPY EMAIL
                     </>
                   )}
@@ -88,7 +88,7 @@ export default function Contact() {
                   href={`mailto:${profile.email}`}
                   className="btn-primary email-btn font-mono text-xs"
                 >
-                  <Send size={14} className="mr-1" />
+                  <Send size={14} style={{ marginRight: "4px" }} />
                   SEND MAIL
                 </a>
               </div>

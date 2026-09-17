@@ -65,7 +65,11 @@ export default function FooterPhysics() {
     selectedTech.forEach((tech, i) => {
       const el = document.createElement('div');
       el.className =
-        'absolute cursor-grab active:cursor-grabbing select-none flex items-center justify-center gap-2 px-3 py-1.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface)] text-[var(--foreground)] shadow-sm transition-shadow hover:border-[var(--accent)] hover:shadow-md opacity-0';
+        'absolute cursor-grab active:cursor-grabbing select-none flex items-center justify-center gap-2 rounded-full border border-[var(--border-strong)] bg-[var(--surface)] text-[var(--foreground)] shadow-sm transition-shadow hover:border-[var(--accent)] hover:shadow-md opacity-0';
+      el.style.paddingLeft = '12px';
+      el.style.paddingRight = '12px';
+      el.style.paddingTop = '6px';
+      el.style.paddingBottom = '6px';
       el.style.width = `${itemWidth}px`;
       el.style.height = `${itemHeight}px`;
       el.style.left = '0px';
@@ -186,7 +190,7 @@ export default function FooterPhysics() {
   }, []);
 
   return (
-    <div className="relative w-full my-8">
+    <div className="relative w-full" style={{ marginTop: "32px", marginBottom: "32px" }}>
       {/* Sandbox Container */}
       <div
         ref={sceneRef}
@@ -195,7 +199,8 @@ export default function FooterPhysics() {
         aria-label="Interactive technology physics sandbox"
       >
         {/* Header Hint */}
-        <div className="absolute top-3.5 left-5 pointer-events-none font-mono text-[11px] text-[var(--dim)] z-20 flex items-center gap-2">
+        <div className="absolute pointer-events-none font-mono text-[11px] text-[var(--dim)] z-20 flex items-center gap-2"
+          style={{ top: "14px", left: "20px" }}>
           <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-ping" />
           <span>// 2D MATTER.JS PHYSICS: CLICK & FLING LOGOS</span>
         </div>

@@ -100,9 +100,9 @@ export default function Skills() {
     <section id="stack" className="section-spacing border-b border-[var(--border)] relative bg-[var(--background)]">
       <div className="editorial-container">
         {/* Section Header */}
-        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between mb-12 sm:mb-16 gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4" style={{ marginBottom: "48px" }}>
           <div>
-            <span className="font-mono text-xs uppercase tracking-widest text-[var(--accent)] block mb-2">
+            <span className="font-mono text-xs uppercase tracking-widest text-[var(--accent)] block" style={{ marginBottom: "8px" }}>
               // 04 • TECHNICAL CAPABILITIES
             </span>
             <h2 className="font-sans font-bold text-3xl sm:text-5xl text-[var(--foreground)] tracking-tight">
@@ -125,9 +125,10 @@ export default function Skills() {
                   key={tech.id}
                   onMouseEnter={() => setActiveTech(tech)}
                   onClick={() => setActiveTech(tech)}
-                  className={`py-5 sm:py-6 px-3 sm:px-5 flex items-center justify-between cursor-pointer transition-all duration-200 group rounded-lg ${
+                  className={`flex items-center justify-between cursor-pointer transition-all duration-200 group rounded-lg ${
                     isActive ? 'bg-[var(--surface)] text-[var(--accent)]' : 'hover:bg-[var(--surface)]/40'
                   }`}
+                  style={{ paddingTop: "20px", paddingBottom: "20px", paddingLeft: "12px", paddingRight: "12px" }}
                   role="button"
                   tabIndex={0}
                   onKeyDown={(e) => e.key === 'Enter' && setActiveTech(tech)}
@@ -138,7 +139,7 @@ export default function Skills() {
                       {tech.id}
                     </span>
                     <div className="flex items-center gap-3">
-                      <div className="w-7 h-7 rounded p-1 bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center">
+                      <div className="w-7 h-7 rounded bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center" style={{ padding: "4px" }}>
                         <img src={tech.icon} alt="" className="w-4 h-4 object-contain" />
                       </div>
                       <span
@@ -169,11 +170,11 @@ export default function Skills() {
 
           {/* Right Column: Sticky Dynamic Description Card */}
           <div className="lg:col-span-5 lg:sticky lg:top-28">
-            <div className="p-7 sm:p-9 rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-xl space-y-6">
+            <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-xl flex flex-col gap-6" style={{ padding: "28px" }}>
               {/* Header with Icon & Category */}
-              <div className="flex items-center justify-between pb-5 border-b border-[var(--border)]">
+              <div className="flex items-center justify-between border-b border-[var(--border)]" style={{ paddingBottom: "20px" }}>
                 <div className="flex items-center gap-3.5">
-                  <div className="w-12 h-12 rounded-xl p-2.5 bg-[var(--background)] border border-[var(--border)] flex items-center justify-center shadow-inner">
+                  <div className="w-12 h-12 rounded-xl bg-[var(--background)] border border-[var(--border)] flex items-center justify-center shadow-inner" style={{ padding: "10px" }}>
                     <img
                       src={activeTech.icon}
                       alt={activeTech.name}
@@ -196,19 +197,19 @@ export default function Skills() {
               </div>
 
               {/* Dynamic Concise Description */}
-              <div className="space-y-4">
+              <div className="flex flex-col gap-4">
                 <p className="font-sans text-base sm:text-lg text-[var(--muted)] leading-relaxed">
                   {activeTech.description}
                 </p>
 
-                <div className="p-4 rounded-xl bg-[var(--background)] border border-[var(--border)] font-mono text-xs text-[var(--foreground)] flex items-start gap-3">
-                  <Terminal size={15} className="text-[var(--accent)] shrink-0 mt-0.5" />
+                <div className="rounded-xl bg-[var(--background)] border border-[var(--border)] font-mono text-xs text-[var(--foreground)] flex items-start gap-3" style={{ padding: "16px" }}>
+                  <Terminal size={15} className="text-[var(--accent)] shrink-0" style={{ marginTop: "2px" }} />
                   <span className="leading-relaxed">{activeTech.highlight}</span>
                 </div>
               </div>
 
               {/* Status footer */}
-              <div className="pt-3 border-t border-[var(--border)] flex items-center justify-between font-mono text-[11px] text-[var(--dim)]">
+              <div className="border-t border-[var(--border)] flex items-center justify-between font-mono text-[11px] text-[var(--dim)]" style={{ paddingTop: "12px" }}>
                 <span>SYSTEM STATUS: ACTIVE</span>
                 <span className="text-[var(--accent)] font-medium">READY FOR PRODUCTION</span>
               </div>

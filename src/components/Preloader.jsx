@@ -55,7 +55,7 @@ export default function Preloader({ onComplete }) {
       className="fixed inset-0 z-[10000] flex flex-col items-center justify-center bg-[var(--background)] text-[var(--foreground)] selection:bg-[var(--accent)] select-none"
       aria-label="System booting sequence"
     >
-      <div className="text-center space-y-5 px-6">
+      <div className="text-center flex flex-col gap-5" style={{ paddingLeft: "24px", paddingRight: "24px" }}>
         {/* Brand Monogram */}
         <div className="flex items-center justify-center gap-3">
           <span className="font-sans font-extrabold text-3xl sm:text-4xl tracking-tighter text-[var(--foreground)]">
@@ -71,13 +71,13 @@ export default function Preloader({ onComplete }) {
           <h2 className="font-sans font-semibold text-lg sm:text-xl tracking-tight text-[var(--foreground)]">
             {profile.name.toUpperCase()}
           </h2>
-          <p className="font-mono text-xs text-[var(--accent)] tracking-widest mt-1">
+          <p className="font-mono text-xs text-[var(--accent)] tracking-widest" style={{ marginTop: "4px" }}>
             {profile.role.toUpperCase()}
           </p>
         </div>
 
         {/* Step Indicator */}
-        <div className="pt-4 flex flex-col items-center gap-2">
+        <div className="flex flex-col items-center gap-2" style={{ paddingTop: "16px" }}>
           <div className="font-mono text-[11px] text-[var(--muted)] tracking-wider h-5">
             {BOOT_STEPS[stepIndex]}
           </div>

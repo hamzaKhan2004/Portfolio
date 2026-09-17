@@ -62,7 +62,8 @@ export default function ProjectModal({ project, onClose }) {
   return (
     <div
       ref={backdropRef}
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 backdrop-blur-md p-4 sm:p-8 overscroll-contain"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 backdrop-blur-md overscroll-contain"
+      style={{ padding: "16px" }}
       onClick={handleClose}
       role="dialog"
       aria-modal="true"
@@ -71,12 +72,12 @@ export default function ProjectModal({ project, onClose }) {
       <div
         ref={windowRef}
         data-lenis-prevent="true"
-        className="relative w-full max-w-[1000px] max-h-[86vh] overflow-y-auto rounded-2xl bg-[var(--surface)] border border-[var(--border-strong)] shadow-2xl p-7 sm:p-10 lg:p-12 space-y-8 overscroll-contain"
+        className="relative w-full max-w-[1000px] max-h-[86vh] overflow-y-auto rounded-2xl bg-[var(--surface)] border border-[var(--border-strong)] shadow-2xl overscroll-contain flex flex-col gap-8"
+        style={{ padding: "28px", overscrollBehavior: "contain" }}
         onClick={(e) => e.stopPropagation()}
-        style={{ overscrollBehavior: 'contain' }}
       >
         {/* Modal Top Bar */}
-        <div className="flex items-center justify-between pb-5 border-b border-[var(--border)]">
+        <div className="flex items-center justify-between border-b border-[var(--border)]" style={{ paddingBottom: "20px" }}>
           <div className="font-mono text-xs text-[var(--muted)] flex items-center gap-2">
             <span>PROJECT</span>
             <span className="text-[var(--dim)]">/</span>
@@ -90,7 +91,8 @@ export default function ProjectModal({ project, onClose }) {
           <button
             type="button"
             onClick={handleClose}
-            className="p-2 rounded-full border border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)] hover:border-[var(--foreground)] transition-colors cursor-pointer"
+            className="rounded-full border border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)] hover:border-[var(--foreground)] transition-colors cursor-pointer"
+            style={{ padding: "8px" }}
             aria-label="Close project modal"
           >
             <X size={18} />
@@ -98,7 +100,7 @@ export default function ProjectModal({ project, onClose }) {
         </div>
 
         {/* Modal Headline & Overview */}
-        <div className="space-y-3">
+        <div className="flex flex-col gap-3">
           <h2
             id="project-modal-title"
             className="font-sans font-bold text-3xl sm:text-4xl text-[var(--foreground)] tracking-tight"
@@ -121,7 +123,7 @@ export default function ProjectModal({ project, onClose }) {
         </div>
 
         {/* Engineering & Architectural Breakdown */}
-        <div className="space-y-4 pt-2">
+        <div className="flex flex-col gap-4" style={{ paddingTop: "8px" }}>
           <h4 className="font-mono text-xs uppercase tracking-wider text-[var(--accent)] font-medium">
             // ARCHITECTURAL IMPLEMENTATION & SYSTEM DESIGN
           </h4>
@@ -131,11 +133,11 @@ export default function ProjectModal({ project, onClose }) {
         </div>
 
         {/* Technologies List */}
-        <div className="space-y-3 pt-3 border-t border-[var(--border)]">
+        <div className="flex flex-col gap-3 border-t border-[var(--border)]" style={{ paddingTop: "12px" }}>
           <span className="font-mono text-xs text-[var(--dim)] block">
             // ECOSYSTEM & PROTOCOLS
           </span>
-          <div className="flex flex-wrap gap-2 pt-1">
+          <div className="flex flex-wrap gap-2" style={{ paddingTop: "4px" }}>
             {project.tags.map((tag) => (
               <span key={tag} className="tech-badge">
                 {tag}
@@ -145,7 +147,7 @@ export default function ProjectModal({ project, onClose }) {
         </div>
 
         {/* Actions with Targeted Magnetic Buttons */}
-        <div className="flex flex-wrap items-center gap-4 pt-4 border-t border-[var(--border)]">
+        <div className="flex flex-wrap items-center gap-4 border-t border-[var(--border)]" style={{ paddingTop: "16px" }}>
           {project.demoLink && (
             <MagneticButton
               href={project.demoLink}

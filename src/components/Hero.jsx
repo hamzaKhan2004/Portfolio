@@ -1,9 +1,9 @@
-import React, { useRef } from 'react';
-import { profile } from '../data/portfolioData';
-import GravityTechTrail from './GravityTechTrail';
-import IdCard from './IdCard';
-import MagneticButton from './MagneticButton';
-import { ArrowDownRight, Mail } from 'lucide-react';
+import React, { useRef } from "react";
+import { profile } from "../data/portfolioData";
+import GravityTechTrail from "./GravityTechTrail";
+import IdCard from "./IdCard";
+import MagneticButton from "./MagneticButton";
+import { ArrowDownRight, Mail } from "lucide-react";
 
 export default function Hero() {
   const heroRef = useRef(null);
@@ -12,7 +12,7 @@ export default function Hero() {
     e.preventDefault();
     const target = document.getElementById(id);
     if (target) {
-      target.scrollIntoView({ behavior: 'smooth' });
+      target.scrollIntoView({ behavior: "smooth" });
     }
   };
 
@@ -20,7 +20,11 @@ export default function Hero() {
     <section
       ref={heroRef}
       id="home"
-      className="relative min-h-[95vh] flex items-center py-28 lg:py-36 border-b border-[var(--border)]"
+      className="relative min-h-[95vh] flex items-center border-b border-[var(--border)]"
+      style={{
+        paddingTop: "clamp(96px, 10vw, 144px)",
+        paddingBottom: "clamp(96px, 10vw, 144px)",
+      }}
     >
       {/* Signature Interaction #1: Slow Deliberate Gravity Tech Trail */}
       <GravityTechTrail containerRef={heroRef} />
@@ -30,8 +34,14 @@ export default function Hero() {
           {/* Editorial Left Column */}
           <div className="lg:col-span-7 flex flex-col justify-center">
             {/* Status & Location Line */}
-            <div className="flex flex-wrap items-center gap-3 mb-8">
-              <span className="inline-flex items-center gap-2 font-mono text-xs text-[var(--accent)] font-medium bg-[var(--accent-dim)] px-3 py-1 rounded-full border border-[var(--accent)]/30">
+            <div
+              className="flex flex-wrap items-center gap-3"
+              style={{ marginBottom: "32px" }}
+            >
+              <span
+                className="inline-flex items-center gap-2 font-mono text-xs text-[var(--accent)] font-medium bg-[var(--accent-dim)] rounded-full border border-[var(--accent)]/30"
+                style={{ paddingLeft: "12px", paddingRight: "12px", paddingTop: "4px", paddingBottom: "4px" }}
+              >
                 <span className="w-2 h-2 rounded-full bg-[var(--accent)] animate-ping" />
                 AVAILABLE FOR OPPORTUNITIES
               </span>
@@ -42,18 +52,26 @@ export default function Hero() {
             </div>
 
             {/* Monumental Editorial Headline */}
-            <div className="space-y-3 mb-8">
-              <h1 className="font-sans font-bold text-5xl sm:text-7xl lg:text-[5.4rem] leading-[0.94] tracking-tighter text-[var(--foreground)]">
-                HAMZA <br />
-                <span className="text-[var(--muted)]">AKIL KHAN</span>
-              </h1>
-              <p className="font-mono text-sm sm:text-base text-[var(--accent)] pt-2 tracking-widest font-medium">
+            <div style={{ marginBottom: "32px" }}>
+              <div style={{ marginBottom: "12px" }}>
+                <h1 className="font-sans font-bold text-5xl sm:text-7xl lg:text-[5.4rem] leading-[0.94] tracking-tighter text-[var(--foreground)]">
+                  HAMZA <br />
+                  <span className="text-[var(--muted)]">AKIL KHAN</span>
+                </h1>
+              </div>
+              <p
+                className="font-mono text-sm sm:text-base text-[var(--accent)] tracking-widest font-medium"
+                style={{ paddingTop: "8px" }}
+              >
                 {profile.role.toUpperCase()}
               </p>
             </div>
 
             {/* Clear, Readable Biography */}
-            <p className="text-lg sm:text-xl text-[var(--muted)] leading-relaxed mb-10 max-w-[62ch]">
+            <p
+              className="text-lg sm:text-xl text-[var(--muted)] leading-relaxed max-w-[62ch]"
+              style={{ marginBottom: "40px" }}
+            >
               {profile.bio}
             </p>
 
@@ -61,7 +79,7 @@ export default function Hero() {
             <div className="flex flex-wrap items-center gap-5">
               <MagneticButton
                 href="#work"
-                onClick={(e) => scrollToSection(e, 'work')}
+                onClick={(e) => scrollToSection(e, "work")}
                 className="btn-primary"
               >
                 <span>EXPLORE WORK</span>
@@ -70,7 +88,7 @@ export default function Hero() {
 
               <MagneticButton
                 href="#contact"
-                onClick={(e) => scrollToSection(e, 'contact')}
+                onClick={(e) => scrollToSection(e, "contact")}
                 className="btn-secondary"
               >
                 <Mail size={15} />
@@ -79,7 +97,7 @@ export default function Hero() {
             </div>
 
             {/* Subtle Pointer Hint */}
-            <div className="mt-16 hidden sm:block">
+            <div className="hidden sm:block" style={{ marginTop: "64px" }}>
               <span className="font-mono text-xs text-[var(--dim)] tracking-wider">
                 // MOVE CURSOR ACROSS VIEWPORT TO RELEASE TECHNOLOGY LOGOS
               </span>

@@ -10,18 +10,19 @@ export default function GravityFooter() {
   };
 
   return (
-    <footer id="contact" className="section-spacing pt-24 pb-14 border-t border-[var(--border)] bg-[var(--background)] scroll-mt-24">
+    <footer id="contact" className="section-spacing border-t border-[var(--border)] bg-[var(--background)] scroll-mt-24"
+      style={{ paddingTop: "96px", paddingBottom: "56px" }}>
       <div className="editorial-container">
         {/* Contact Narrative matching Screenshot 3 */}
-        <div className="max-w-2xl mb-12">
-          <span className="font-mono text-xs uppercase tracking-widest text-[var(--accent)] block mb-3">
+        <div className="max-w-2xl" style={{ marginBottom: "48px" }}>
+          <span className="font-mono text-xs uppercase tracking-widest text-[var(--accent)] block" style={{ marginBottom: "12px" }}>
             // 05 • GET IN TOUCH
           </span>
-          <h2 className="font-sans font-bold text-4xl sm:text-6xl text-[var(--foreground)] tracking-tight mb-4">
+          <h2 className="font-sans font-bold text-4xl sm:text-6xl text-[var(--foreground)] tracking-tight" style={{ marginBottom: "16px" }}>
             LET'S BUILD <br />
             SOMETHING THOUGHTFUL.
           </h2>
-          <p className="text-lg sm:text-xl text-[var(--muted)] leading-relaxed mb-8 max-w-[60ch]">
+          <p className="text-lg sm:text-xl text-[var(--muted)] leading-relaxed max-w-[60ch]" style={{ marginBottom: "32px" }}>
             Whether you have an engineering role, a full-stack product challenge, or want to discuss architectural patterns, my inbox is open.
           </p>
 
@@ -38,7 +39,8 @@ export default function GravityFooter() {
         <FooterPhysics />
 
         {/* Minimal Bottom Editorial Bar */}
-        <div className="pt-12 mt-12 border-t border-[var(--border)] flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div className="border-t border-[var(--border)] flex flex-col md:flex-row items-start md:items-center justify-between gap-6"
+          style={{ paddingTop: "48px", marginTop: "48px" }}>
           <div>
             <span className="font-sans font-bold text-xl text-[var(--foreground)] tracking-tight block">
               {profile.name}
@@ -46,7 +48,7 @@ export default function GravityFooter() {
             <span className="font-mono text-xs text-[var(--dim)] tracking-wide">
               {profile.role.toUpperCase()} · MUMBAI, MAHARASHTRA
             </span>
-            <div className="mt-2 font-mono text-[11px] text-[var(--dim)]">
+            <div className="font-mono text-[11px] text-[var(--dim)]" style={{ marginTop: "8px" }}>
               © {new Date().getFullYear()} {profile.name.toUpperCase()}. CRAFTED WITH REACT, TAILWIND, GSAP & MATTER.JS.
             </div>
           </div>

@@ -1,17 +1,17 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { useLenisScroll } from './animations/useLenisScroll';
-import Preloader from './components/Preloader';
-import Navbar from './components/Navbar';
-import Hero from './components/Hero';
-import About from './components/About';
-import Projects from './components/Projects';
-import Skills from './components/Skills';
-import GravityFooter from './components/GravityFooter';
-import CustomCursor from './components/CustomCursor';
-import PageTransition from './animations/PageTransition';
-import ProjectModal from './components/ProjectModal';
+import React, { useState, useCallback, useEffect } from "react";
+import { useLenisScroll } from "./animations/useLenisScroll";
+import Preloader from "./components/Preloader";
+import Navbar from "./components/Navbar";
+import Hero from "./components/Hero";
+import About from "./components/About";
+import Projects from "./components/Projects";
+import Skills from "./components/Skills";
+import GravityFooter from "./components/GravityFooter";
+import CustomCursor from "./components/CustomCursor";
+import PageTransition from "./animations/PageTransition";
+import ProjectModal from "./components/ProjectModal";
 
-import './styles/index.css';
+import "./styles/index.css";
 
 export default function App() {
   // Initialize Lenis smooth scroll and GSAP ScrollTrigger sync
@@ -26,15 +26,15 @@ export default function App() {
   useEffect(() => {
     const root = document.documentElement;
     if (isDark) {
-      root.classList.remove('light');
-      root.classList.add('dark');
+      root.classList.remove("light");
+      root.classList.add("dark");
       const metaTheme = document.querySelector('meta[name="theme-color"]');
-      if (metaTheme) metaTheme.setAttribute('content', '#080a0c');
+      if (metaTheme) metaTheme.setAttribute("content", "#080a0c");
     } else {
-      root.classList.remove('dark');
-      root.classList.add('light');
+      root.classList.remove("dark");
+      root.classList.add("light");
       const metaTheme = document.querySelector('meta[name="theme-color"]');
-      if (metaTheme) metaTheme.setAttribute('content', '#f4f4f0');
+      if (metaTheme) metaTheme.setAttribute("content", "#f4f4f0");
     }
   }, [isDark]);
 
@@ -96,10 +96,7 @@ export default function App() {
 
       {/* Isolated Architectural Deep-Dive Project Modal */}
       {selectedProject && (
-        <ProjectModal
-          project={selectedProject}
-          onClose={handleCloseProject}
-        />
+        <ProjectModal project={selectedProject} onClose={handleCloseProject} />
       )}
     </div>
   );
