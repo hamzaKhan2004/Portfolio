@@ -68,7 +68,9 @@ export default function IdCard() {
     // Scroll extension state
     let currentScrollY = window.scrollY;
     let targetScrollOffsetY = 0;
+    let targetScrollOffsetX = 0;
     let scrollOffsetY = 0;
+    let scrollOffsetX = 0;
 
     // Spring tuning parameters
     const SPRING_STIFFNESS = 0.09;
@@ -208,21 +210,73 @@ export default function IdCard() {
       }
     };
 
-    // ── Scroll Handler (Desktop & Mobile: scroll down extends card down) ──
-    const handleScroll = () => {
-      currentScrollY = window.scrollY;
-      // When scrolling down, currentScrollY increases -> targetScrollOffsetY increases (positive)
-      // Clamped to 130px max downward travel so card stays within hero section
-      targetScrollOffsetY = Math.min(Math.max(0, currentScrollY * 0.30), 130);
+    // ── Scroll Handler: Smooth progression toward About section ──
+    let totalDeltaY = 0;
+    let totalDeltaX = 0;
+    let maxScroll = 1;
+
+    const recalculateScrollMetrics = () => {
+      const aboutDock = document.getElementById("about-card-target");
+      const aboutEl = document.getElementById("about");
+      if (!card) return;
+
+      const cardRect = card.getBoundingClientRect();
+      const cardDocTop = cardRect.top + window.scrollY - scrollOffsetY;
+      const cardDocLeft = cardRect.left + window.scrollX - scrollOffsetX;
+
+      maxScroll =
+        aboutEl && aboutEl.offsetTop > 0 ? aboutEl.offsetTop : window.innerHeight;
+
+      const isDockVisible =
+        aboutDock && window.getComputedStyle(aboutDock).display !== "none";
+
+      if (isDockVisible) {
+        const dockRect = aboutDock.getBoundingClientRect();
+        const dockDocTop = dockRect.top + window.scrollY;
+        const dockDocLeft = dockRect.left + window.scrollX;
+
+        totalDeltaY =
+          dockDocTop - cardDocTop + (dockRect.height - cardRect.height) / 2;
+        totalDeltaX =
+          dockDocLeft - cardDocLeft + (dockRect.width - cardRect.width) / 2;
+      } else if (aboutEl) {
+        // Mobile progression down toward About
+        totalDeltaY = Math.max(250, (aboutEl.offsetTop - cardDocTop) * 0.85);
+        totalDeltaX = 0;
+      } else {
+        totalDeltaY = window.innerHeight * 0.8;
+        totalDeltaX = 0;
+      }
     };
 
-    // Initial scroll value
+    const handleScroll = () => {
+      currentScrollY = window.scrollY;
+      if (maxScroll <= 1) recalculateScrollMetrics();
+      const rawProgress = Math.min(Math.max(0, currentScrollY / maxScroll), 1);
+      // Smooth cubic Hermite ease
+      const progress =
+        rawProgress < 0.5
+          ? 2 * rawProgress * rawProgress
+          : 1 - Math.pow(-2 * rawProgress + 2, 2) / 2;
+
+      targetScrollOffsetY = progress * totalDeltaY;
+      targetScrollOffsetX = progress * totalDeltaX;
+    };
+
+    const handleResize = () => {
+      updateBounds();
+      recalculateScrollMetrics();
+      handleScroll();
+    };
+
+    // Initial scroll setup
+    recalculateScrollMetrics();
     handleScroll();
 
     window.addEventListener("pointermove", handlePointerMove, { passive: true });
     window.addEventListener("pointerup", handlePointerUp);
     window.addEventListener("pointercancel", handlePointerUp);
-    window.addEventListener("resize", updateBounds, { passive: true });
+    window.addEventListener("resize", handleResize, { passive: true });
     window.addEventListener("scroll", handleScroll, { passive: true });
     card.addEventListener("pointerdown", handlePointerDown);
     container.addEventListener("mouseleave", handleMouseLeave, { passive: true });
@@ -255,6 +309,7 @@ export default function IdCard() {
 
       // 2. Scroll extension spring (smooth follow)
       scrollOffsetY += (targetScrollOffsetY - scrollOffsetY) * 0.12;
+      scrollOffsetX += (targetScrollOffsetX - scrollOffsetX) * 0.12;
 
       // 3. Dynamic card rotation
       // Directional tilt: pulling right tilts clockwise (+), pulling left tilts counter-clockwise (-)
@@ -278,8 +333,9 @@ export default function IdCard() {
       tiltY += (targetTiltY - tiltY) * 0.08;
 
       // 5. Apply unified transform to cardAssembly (moves hook and card together)
+      const translateX = cardX + scrollOffsetX;
       const translateY = cardY + scrollOffsetY;
-      cardAssembly.style.transform = `translate3d(${cardX.toFixed(1)}px, ${translateY.toFixed(1)}px, 0) rotateZ(${totalAngle.toFixed(2)}deg) rotateX(${tiltX.toFixed(2)}deg) rotateY(${tiltY.toFixed(2)}deg)`;
+      cardAssembly.style.transform = `translate3d(${translateX.toFixed(1)}px, ${translateY.toFixed(1)}px, 0) rotateZ(${totalAngle.toFixed(2)}deg) rotateX(${tiltX.toFixed(2)}deg) rotateY(${tiltY.toFixed(2)}deg)`;
 
       // 6. Redraw dynamic SVG lanyard rope
       updateRope();
@@ -293,7 +349,7 @@ export default function IdCard() {
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointerup", handlePointerUp);
       window.removeEventListener("pointercancel", handlePointerUp);
-      window.removeEventListener("resize", updateBounds);
+      window.removeEventListener("resize", handleResize);
       window.removeEventListener("scroll", handleScroll);
       card.removeEventListener("pointerdown", handlePointerDown);
       container.removeEventListener("mouseleave", handleMouseLeave);
