@@ -113,11 +113,15 @@ export default function ProjectModal({ project, onClose }) {
         </div>
 
         {/* Large Screenshot Frame */}
-        <div className="rounded-xl overflow-hidden border border-[var(--border)] bg-[var(--background)] shadow-lg">
+        <div
+          className="rounded-xl overflow-hidden border border-[var(--border)] bg-[var(--background)] shadow-lg w-full"
+          style={{ minHeight: "220px" }}
+        >
           <img
             src={project.image}
             alt={project.title}
-            className="w-full h-auto max-h-[440px] object-cover object-top"
+            className="w-full object-cover object-top"
+            style={{ display: "block", minHeight: "220px", maxHeight: "460px", height: "auto" }}
             loading="eager"
           />
         </div>

@@ -116,8 +116,56 @@ export default function Skills() {
 
         {/* 2-Column Split: Left = Technology Index, Right = Sticky Dynamic Description */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
-          {/* Left Column: 01 to 11 Interactive Technology List */}
-          <div className="lg:col-span-7 divide-y divide-[var(--border)] border-y border-[var(--border)]">
+          {/* Description Card — on mobile shows ABOVE the list (order-first) */}
+          <div className="lg:col-span-5 lg:sticky lg:top-28 order-first lg:order-last">
+            <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-xl flex flex-col gap-6" style={{ padding: "28px" }}>
+              {/* Header with Icon & Category */}
+              <div className="flex items-center justify-between border-b border-[var(--border)]" style={{ paddingBottom: "20px" }}>
+                <div className="flex items-center gap-3.5">
+                  <div className="w-12 h-12 rounded-xl bg-[var(--background)] border border-[var(--border)] flex items-center justify-center shadow-inner" style={{ padding: "10px" }}>
+                    <img
+                      src={activeTech.icon}
+                      alt={activeTech.name}
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <div>
+                    <h3 className="font-sans font-bold text-2xl text-[var(--foreground)] tracking-tight">
+                      {activeTech.name}
+                    </h3>
+                    <span className="font-mono text-xs text-[var(--accent)] tracking-wider">
+                      {activeTech.category}
+                    </span>
+                  </div>
+                </div>
+
+                <span className="font-mono text-xs text-[var(--dim)]">
+                  {activeTech.id} // VERIFIED
+                </span>
+              </div>
+
+              {/* Dynamic Concise Description */}
+              <div className="flex flex-col gap-4">
+                <p className="font-sans text-base sm:text-lg text-[var(--muted)] leading-relaxed">
+                  {activeTech.description}
+                </p>
+
+                <div className="rounded-xl bg-[var(--background)] border border-[var(--border)] font-mono text-xs text-[var(--foreground)] flex items-start gap-3" style={{ padding: "16px" }}>
+                  <Terminal size={15} className="text-[var(--accent)] shrink-0" style={{ marginTop: "2px" }} />
+                  <span className="leading-relaxed">{activeTech.highlight}</span>
+                </div>
+              </div>
+
+              {/* Status footer */}
+              <div className="border-t border-[var(--border)] flex items-center justify-between font-mono text-[11px] text-[var(--dim)]" style={{ paddingTop: "12px" }}>
+                <span>SYSTEM STATUS: ACTIVE</span>
+                <span className="text-[var(--accent)] font-medium">READY FOR PRODUCTION</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Tech list — on mobile shows BELOW description (order-last) */}
+          <div className="lg:col-span-7 divide-y divide-[var(--border)] border-y border-[var(--border)] order-last lg:order-first">
             {TECH_STACK.map((tech) => {
               const isActive = activeTech.id === tech.id;
               return (
@@ -166,54 +214,6 @@ export default function Skills() {
                 </div>
               );
             })}
-          </div>
-
-          {/* Right Column: Sticky Dynamic Description Card */}
-          <div className="lg:col-span-5 lg:sticky lg:top-28">
-            <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-xl flex flex-col gap-6" style={{ padding: "28px" }}>
-              {/* Header with Icon & Category */}
-              <div className="flex items-center justify-between border-b border-[var(--border)]" style={{ paddingBottom: "20px" }}>
-                <div className="flex items-center gap-3.5">
-                  <div className="w-12 h-12 rounded-xl bg-[var(--background)] border border-[var(--border)] flex items-center justify-center shadow-inner" style={{ padding: "10px" }}>
-                    <img
-                      src={activeTech.icon}
-                      alt={activeTech.name}
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
-                  <div>
-                    <h3 className="font-sans font-bold text-2xl text-[var(--foreground)] tracking-tight">
-                      {activeTech.name}
-                    </h3>
-                    <span className="font-mono text-xs text-[var(--accent)] tracking-wider">
-                      {activeTech.category}
-                    </span>
-                  </div>
-                </div>
-
-                <span className="font-mono text-xs text-[var(--dim)]">
-                  {activeTech.id} // VERIFIED
-                </span>
-              </div>
-
-              {/* Dynamic Concise Description */}
-              <div className="flex flex-col gap-4">
-                <p className="font-sans text-base sm:text-lg text-[var(--muted)] leading-relaxed">
-                  {activeTech.description}
-                </p>
-
-                <div className="rounded-xl bg-[var(--background)] border border-[var(--border)] font-mono text-xs text-[var(--foreground)] flex items-start gap-3" style={{ padding: "16px" }}>
-                  <Terminal size={15} className="text-[var(--accent)] shrink-0" style={{ marginTop: "2px" }} />
-                  <span className="leading-relaxed">{activeTech.highlight}</span>
-                </div>
-              </div>
-
-              {/* Status footer */}
-              <div className="border-t border-[var(--border)] flex items-center justify-between font-mono text-[11px] text-[var(--dim)]" style={{ paddingTop: "12px" }}>
-                <span>SYSTEM STATUS: ACTIVE</span>
-                <span className="text-[var(--accent)] font-medium">READY FOR PRODUCTION</span>
-              </div>
-            </div>
           </div>
         </div>
       </div>

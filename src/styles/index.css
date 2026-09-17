@@ -42,20 +42,20 @@
 }
 
 html.light {
-  /* LIGHT THEME (INTENTIONALLY DESIGNED) */
-  --background: #f4f4f0; /* 60%: Warm off-white */
-  --foreground: #111215; /* 30%: Deep charcoal text */
-  --surface: #e7e7e2;
-  --surface-hover: #deded8;
-  --muted: #62666f;
-  --dim: #90949d;
-  --border: rgba(17, 18, 21, 0.09);
-  --border-strong: rgba(17, 18, 21, 0.18);
-  --border-hover: rgba(163, 242, 24, 0.5);
+  /* LIGHT THEME — Softer neutral to reduce eye strain */
+  --background: #f0f0ed;       /* Warm stone-grey, not pure white */
+  --foreground: #111215;       /* Deep charcoal */
+  --surface: #e4e4e0;          /* Slightly darker surface for contrast */
+  --surface-hover: #d8d8d4;    /* Hover surface */
+  --muted: #545760;            /* Medium-contrast secondary text */
+  --dim: #86898f;              /* Low-emphasis dim text */
+  --border: rgba(17, 18, 21, 0.10);
+  --border-strong: rgba(17, 18, 21, 0.20);
+  --border-hover: rgba(139, 197, 0, 0.45);
 
-  --accent: #a3f218; /* Vibrant high-contrast lime */
-  --accent-foreground: #080a0c;
-  --accent-dim: rgba(163, 242, 24, 0.16);
+  --accent: #6ea600;           /* Deeper olive-lime — good contrast on light bg */
+  --accent-foreground: #ffffff;
+  --accent-dim: rgba(110, 166, 0, 0.13);
 }
 
 *,

@@ -26,15 +26,19 @@ export default function Projects({ onSelectProject }) {
       const dx = e.clientX - lastMousePos.current.x;
       lastMousePos.current = { x: e.clientX, y: e.clientY };
 
-      // Ensure the preview card stays inside the intended right-center zone
-      // and NEVER covers the left project text column (min X ~ 46vw, max X inside viewport)
-      const targetX = Math.max(window.innerWidth * 0.46, Math.min(window.innerWidth - 390, e.clientX + 30));
-      const targetY = Math.max(90, Math.min(window.innerHeight - 280, e.clientY - 120));
+      // The project list is 12 cols; right button column (col-span-4) starts ~75% of container width.
+      // Clamp preview card so it stays in the center zone and NEVER covers the right button column.
+      // maxX: leave at least 380px from the right edge (button column width + margin)
+      const safeRightBound = window.innerWidth - 420;
+      const targetX = Math.max(
+        window.innerWidth * 0.40,
+        Math.min(safeRightBound, e.clientX - 180)
+      );
+      const targetY = Math.max(80, Math.min(window.innerHeight - 300, e.clientY - 140));
 
       xTo(targetX);
       yTo(targetY);
 
-      // Subtle tilt based on cursor velocity
       const tilt = Math.max(-8, Math.min(8, dx * 0.25));
       rotTo(tilt);
     };

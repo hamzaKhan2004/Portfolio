@@ -53,14 +53,15 @@ export default function GravityFooter() {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-6 font-mono text-xs text-[var(--muted)]">
+          <div className="flex flex-wrap items-center gap-3 font-mono text-xs text-[var(--muted)]">
             <MagneticButton
               href={profile.github}
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-[var(--accent)] transition-colors inline-flex items-center gap-1.5"
+              className="inline-flex items-center gap-2 hover:text-[var(--accent)] hover:border-[var(--accent)] transition-colors rounded border border-[var(--border-strong)]"
+              style={{ paddingLeft: "12px", paddingRight: "12px", paddingTop: "8px", paddingBottom: "8px" }}
             >
-              <Github size={13} />
+              <Github size={15} />
               <span>GITHUB</span>
             </MagneticButton>
 
@@ -68,29 +69,32 @@ export default function GravityFooter() {
               href={profile.linkedin}
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-[var(--accent)] transition-colors inline-flex items-center gap-1.5"
+              className="inline-flex items-center gap-2 hover:text-[var(--accent)] hover:border-[var(--accent)] transition-colors rounded border border-[var(--border-strong)]"
+              style={{ paddingLeft: "12px", paddingRight: "12px", paddingTop: "8px", paddingBottom: "8px" }}
             >
-              <Linkedin size={13} />
+              <Linkedin size={15} />
               <span>LINKEDIN</span>
             </MagneticButton>
 
             <MagneticButton
               href={profile.resumeUrl}
               download="Hamza_Akil_Khan_Resume.pdf"
-              className="hover:text-[var(--accent)] transition-colors inline-flex items-center gap-1.5"
+              className="inline-flex items-center gap-2 hover:text-[var(--accent)] hover:border-[var(--accent)] transition-colors rounded border border-[var(--border-strong)]"
+              style={{ paddingLeft: "12px", paddingRight: "12px", paddingTop: "8px", paddingBottom: "8px" }}
             >
-              <ArrowUpRight size={13} />
+              <ArrowUpRight size={15} />
               <span>RESUME</span>
             </MagneticButton>
 
             <button
               type="button"
               onClick={scrollToTop}
-              className="hover:text-[var(--foreground)] transition-colors inline-flex items-center gap-1.5 cursor-pointer ml-auto sm:ml-0"
+              className="inline-flex items-center gap-2 hover:text-[var(--foreground)] hover:border-[var(--foreground)] transition-colors rounded border border-[var(--border-strong)] cursor-pointer"
+              style={{ paddingLeft: "12px", paddingRight: "12px", paddingTop: "8px", paddingBottom: "8px" }}
               aria-label="Back to top of page"
             >
               <span>TOP</span>
-              <ArrowUp size={13} />
+              <ArrowUp size={14} />
             </button>
           </div>
         </div>
