@@ -1,12 +1,14 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
+import gsap from "gsap";
 import { profile } from "../data/portfolioData";
 import GravityTechTrail from "./GravityTechTrail";
 import IdCard from "./IdCard";
 import MagneticButton from "./MagneticButton";
 import { ArrowDownRight, Mail } from "lucide-react";
 
-export default function Hero() {
+export default function Hero({ introPhase = "ready", onIntroSettled }) {
   const heroRef = useRef(null);
+  const heroContentRef = useRef(null);
 
   const scrollToSection = (e, id) => {
     e.preventDefault();
@@ -15,6 +17,33 @@ export default function Hero() {
       target.scrollIntoView({ behavior: "smooth" });
     }
   };
+
+  useEffect(() => {
+    const el = heroContentRef.current;
+    if (!el) return;
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      el.style.opacity = "1";
+      el.style.transform = "none";
+      return;
+    }
+
+    if (introPhase === "booting" || introPhase === "revealing-card") {
+      el.style.opacity = "0";
+      el.style.transform = "translate3d(0, 14px, 0)";
+    } else if (introPhase === "revealing-home") {
+      gsap.to(el, {
+        opacity: 1,
+        y: 0,
+        duration: 0.45,
+        ease: "power2.out",
+        clearProps: "transform",
+      });
+    } else if (introPhase === "ready") {
+      el.style.opacity = "1";
+      gsap.set(el, { clearProps: "transform" });
+    }
+  }, [introPhase]);
 
   return (
     <section
@@ -32,7 +61,7 @@ export default function Hero() {
       <div className="editorial-container relative z-20 w-full">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-14 lg:gap-20 items-center">
           {/* Editorial Left Column */}
-          <div className="lg:col-span-7 flex flex-col justify-center">
+          <div ref={heroContentRef} className="lg:col-span-7 flex flex-col justify-center">
             {/* Status & Location Line */}
             <div
               className="flex flex-wrap items-center gap-3"
@@ -106,7 +135,7 @@ export default function Hero() {
 
           {/* Editorial Right Column: Physical Lanyard ID Card */}
           <div className="lg:col-span-5 flex justify-center lg:justify-end">
-            <IdCard />
+            <IdCard introPhase={introPhase} onIntroSettled={onIntroSettled} />
           </div>
         </div>
       </div>

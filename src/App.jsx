@@ -18,9 +18,26 @@ export default function App() {
   useLenisScroll();
 
   const [isLoading, setIsLoading] = useState(true);
+  const [introPhase, setIntroPhase] = useState("booting");
   const [isDark, setIsDark] = useState(true);
   const [selectedProject, setSelectedProject] = useState(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
+
+  // Intro transition choreography callbacks
+  const handleBootComplete = useCallback(() => {
+    setIntroPhase("revealing-card");
+  }, []);
+
+  const handlePreloaderComplete = useCallback(() => {
+    setIsLoading(false);
+  }, []);
+
+  const handleIntroSettled = useCallback(() => {
+    setIntroPhase("revealing-home");
+    setTimeout(() => {
+      setIntroPhase("ready");
+    }, 480);
+  }, []);
 
   // Sync Dark/Light theme class on root document
   useEffect(() => {
@@ -68,7 +85,12 @@ export default function App() {
       <CustomCursor />
 
       {/* High-Tech Booting Loader (Only runs once on initial load) */}
-      {isLoading && <Preloader onComplete={() => setIsLoading(false)} />}
+      {isLoading && (
+        <Preloader
+          onBootComplete={handleBootComplete}
+          onComplete={handlePreloaderComplete}
+        />
+      )}
 
       {/* Fast, GPU-Accelerated Tile Page Transition */}
       <PageTransition
@@ -77,15 +99,30 @@ export default function App() {
       />
 
       {/* Minimal Header */}
-      <Navbar
-        isDark={isDark}
-        onToggleTheme={toggleTheme}
-        onNavigateWithTransition={handleNavigateWithTransition}
-      />
+      <div
+        id="navbar-wrapper"
+        style={{
+          opacity: introPhase === "booting" || introPhase === "revealing-card" ? 0 : 1,
+          transform:
+            introPhase === "booting" || introPhase === "revealing-card"
+              ? "translate3d(0, -10px, 0)"
+              : "none",
+          transition:
+            introPhase === "revealing-home" || introPhase === "ready"
+              ? "opacity 0.4s ease-out, transform 0.4s ease-out"
+              : "none",
+        }}
+      >
+        <Navbar
+          isDark={isDark}
+          onToggleTheme={toggleTheme}
+          onNavigateWithTransition={handleNavigateWithTransition}
+        />
+      </div>
 
       {/* Core Editorial Experience: HOME -> ABOUT -> WORK -> STACK */}
       <main id="main-content">
-        <Hero />
+        <Hero introPhase={introPhase} onIntroSettled={handleIntroSettled} />
         <About />
         <Projects onSelectProject={handleOpenProject} />
         <Skills />

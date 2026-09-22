@@ -1,8 +1,9 @@
 import React, { useRef, useEffect, useState } from "react";
+import gsap from "gsap";
 import { profile } from "../data/portfolioData";
 import { MapPin, Play, Pause, RotateCcw } from "lucide-react";
 
-export default function IdCard() {
+export default function IdCard({ introPhase = "ready", onIntroSettled }) {
   const containerRef = useRef(null);
   const anchorRef = useRef(null);
   const cardAssemblyRef = useRef(null);
@@ -16,6 +17,7 @@ export default function IdCard() {
   const mainPathRef = useRef(null);
   const accentPathRef = useRef(null);
   const videoRef = useRef(null);
+  const impulseRef = useRef(false);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [hasVideoError, setHasVideoError] = useState(false);
@@ -385,6 +387,10 @@ export default function IdCard() {
       const velTilt = Math.max(-3, Math.min(3, velX * 0.18));
 
       // Damped pendulum oscillation
+      if (impulseRef.current) {
+        impulseRef.current = false;
+        swingVelocity += 0.55;
+      }
       const swingForce = -PENDULUM_K * swingAngle;
       swingVelocity = (swingVelocity + swingForce) * PENDULUM_DAMP;
       swingAngle += swingVelocity;
@@ -424,6 +430,47 @@ export default function IdCard() {
       if (animFrameId) cancelAnimationFrame(animFrameId);
     };
   }, []);
+
+  // ── Intro Reveal Animation Coordination ──
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      container.style.opacity = "1";
+      container.style.transform = "none";
+      if (onIntroSettled) onIntroSettled();
+      return;
+    }
+
+    if (introPhase === "booting") {
+      container.style.opacity = "0";
+      container.style.transform = "translate3d(0, -65px, 0)";
+    } else if (introPhase === "revealing-card") {
+      // Impart subtle impulse to lanyard simulation so strap and card have tactile sway
+      impulseRef.current = true;
+
+      gsap.fromTo(
+        container,
+        { opacity: 0, y: -65 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.65,
+          ease: "back.out(1.6)",
+          onComplete: () => {
+            if (container) {
+              gsap.set(container, { clearProps: "transform" });
+            }
+            if (onIntroSettled) onIntroSettled();
+          },
+        }
+      );
+    } else if (introPhase === "ready") {
+      container.style.opacity = "1";
+      gsap.set(container, { clearProps: "transform" });
+    }
+  }, [introPhase, onIntroSettled]);
 
   return (
     <div
