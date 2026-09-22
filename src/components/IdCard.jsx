@@ -183,9 +183,8 @@ export default function IdCard() {
 
     // ── Pointer Handlers (Relative, omnidirectional, zero bias) ──
     const handlePointerDown = (e) => {
-      // Drag only on desktop/mouse with primary button
-      if (e.pointerType === "touch" || window.innerWidth < 1024) return;
-      if (e.button !== 0) return;
+      // Primary button for mouse; allow primary touch on mobile
+      if (e.pointerType === "mouse" && e.button !== 0) return;
 
       isDragging = true;
       dragStartPointerX = e.clientX;
@@ -203,7 +202,16 @@ export default function IdCard() {
       targetTiltY = 0;
 
       card.style.cursor = "grabbing";
-      e.preventDefault();
+
+      if (e.pointerType === "touch" && card.setPointerCapture) {
+        try {
+          card.setPointerCapture(e.pointerId);
+        } catch (_) {}
+      }
+
+      if (e.pointerType !== "touch") {
+        e.preventDefault();
+      }
     };
 
     const handlePointerMove = (e) => {
@@ -247,12 +255,17 @@ export default function IdCard() {
       }
     };
 
-    const handlePointerUp = () => {
+    const handlePointerUp = (e) => {
       if (!isDragging) return;
       isDragging = false;
       targetCardX = 0;
       targetCardY = 0;
       card.style.cursor = "grab";
+      if (e && e.pointerType === "touch" && card.releasePointerCapture) {
+        try {
+          card.releasePointerCapture(e.pointerId);
+        } catch (_) {}
+      }
     };
 
     const handleMouseLeave = () => {
@@ -527,6 +540,7 @@ export default function IdCard() {
             marginTop: "-6px",
             padding: "24px",
             userSelect: "none",
+            touchAction: "none",
           }}
         >
           {/* Specular Glare Layer */}
@@ -593,11 +607,11 @@ export default function IdCard() {
             }}
             aria-label={isPlaying ? "Pause introduction video" : "Play introduction video"}
           >
-            {/* Existing Profile Image (Default Black-and-White, Color on Hover) */}
+            {/* Existing Profile Image (Default Color on Mobile, Grayscale to Color on Hover on Desktop) */}
             <img
               src={profile.avatarUrl}
               alt="Hamza Akil Khan"
-              className={`w-full h-full object-cover object-center filter grayscale contrast-105 group-hover:grayscale-0 group-hover:contrast-100 transition-all duration-500 ${isPlaying && !hasVideoError ? "opacity-0 pointer-events-none" : "opacity-100"
+              className={`w-full h-full object-cover object-center filter max-lg:grayscale-0 max-lg:contrast-100 lg:grayscale lg:contrast-105 lg:group-hover:grayscale-0 lg:group-hover:contrast-100 transition-all duration-500 ${isPlaying && !hasVideoError ? "opacity-0 pointer-events-none" : "opacity-100"
                 }`}
               loading="eager"
             />

@@ -69,20 +69,52 @@ export default function ProjectModal({ project, onClose }) {
       aria-modal="true"
       aria-labelledby="project-modal-title"
     >
+      {/* Hidden scrollbar styles */}
+      <style>
+        {`
+      .project-modal-scroll {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+
+      .project-modal-scroll::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
+      }
+    `}
+      </style>
+
       <div
         ref={windowRef}
         data-lenis-prevent="true"
-        className="relative w-full max-w-[1000px] max-h-[86vh] overflow-y-auto rounded-2xl bg-[var(--surface)] border border-[var(--border-strong)] shadow-2xl overscroll-contain flex flex-col gap-8"
-        style={{ padding: "28px", overscrollBehavior: "contain" }}
+        className="project-modal-scroll relative w-full max-w-[1000px] max-h-[86vh] overflow-y-auto rounded-2xl bg-[var(--surface)] border border-[var(--border-strong)] shadow-2xl overscroll-contain flex flex-col gap-8"
+        style={{
+          padding: "28px",
+          overscrollBehavior: "contain",
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Top Bar */}
-        <div className="flex items-center justify-between border-b border-[var(--border)]" style={{ paddingBottom: "20px" }}>
+        <div
+          className="flex items-center justify-between border-b border-[var(--border)]"
+          style={{ paddingBottom: "20px" }}
+        >
           <div className="font-mono text-xs text-[var(--muted)] flex items-center gap-2">
             <span>PROJECT</span>
-            <span className="text-[var(--dim)]">/</span>
-            <span className="text-[var(--accent)]">{project.id}</span>
-            <span className="text-[var(--dim)]">/</span>
+
+            <span className="text-[var(--dim)]">
+              /
+            </span>
+
+            <span className="text-[var(--accent)]">
+              {project.id}
+            </span>
+
+            <span className="text-[var(--dim)]">
+              /
+            </span>
+
             <span className="text-[var(--foreground)] uppercase font-semibold">
               {project.title}
             </span>
@@ -100,13 +132,16 @@ export default function ProjectModal({ project, onClose }) {
         </div>
 
         {/* Modal Headline & Overview */}
-        <div className="flex flex-col gap-3">
+        <div
+          className="flex flex-col gap-3"
+        >
           <h2
             id="project-modal-title"
             className="font-sans font-bold text-3xl sm:text-4xl text-[var(--foreground)] tracking-tight"
           >
             {project.title}
           </h2>
+
           <p className="text-lg sm:text-xl text-[var(--muted)] leading-relaxed max-w-[70ch]">
             {project.description}
           </p>
@@ -114,36 +149,96 @@ export default function ProjectModal({ project, onClose }) {
 
         {/* Large Screenshot Frame */}
         <div
-          className="rounded-xl overflow-hidden border border-[var(--border)] bg-[var(--background)] shadow-lg w-full"
-          style={{ minHeight: "220px" }}
+          className="rounded-xl overflow-hidden border border-[var(--border-strong)] bg-[var(--surface)] shadow-2xl w-full"
+          style={{
+            padding: "12px",
+            minHeight: "600px",
+            maxHeight: "none",
+          }}
         >
-          <img
-            src={project.image}
-            alt={project.title}
-            className="w-full object-cover object-top"
-            style={{ display: "block", minHeight: "220px", maxHeight: "460px", height: "auto" }}
-            loading="eager"
-          />
+          {/* Image Container */}
+          <div
+            className="rounded-lg overflow-hidden border border-[var(--border)] bg-[var(--background)] w-full flex items-center justify-center"
+            style={{
+              minHeight: "100%",
+              maxHeight: "none",
+            }}
+
+          >
+            <img
+              src={project.image}
+              alt={project.title}
+              className="w-full object-contain"
+              style={{
+                display: "block",
+                width: "100%",
+                height: "500px",
+                maxHeight: "none",
+                objectFit: "cover",
+              }}
+              loading="eager"
+            />
+          </div>
+
+          {/* Image Footer */}
+          <div
+            className="flex items-center justify-between font-mono text-xs"
+            style={{
+              marginTop: "12px",
+              paddingLeft: "4px",
+              paddingRight: "4px",
+            }}
+          >
+            <span
+              className="text-[var(--foreground)] font-semibold truncate max-w-[280px]"
+            >
+              {project.title}
+            </span>
+
+            <span className="text-[var(--accent)] shrink-0">
+              {project.id} // PRODUCTION
+            </span>
+          </div>
         </div>
 
         {/* Engineering & Architectural Breakdown */}
-        <div className="flex flex-col gap-4" style={{ paddingTop: "8px" }}>
+        <div
+          className="flex flex-col gap-4"
+          style={{
+            paddingTop: "8px",
+          }}
+        >
           <h4 className="font-mono text-xs uppercase tracking-wider text-[var(--accent)] font-medium">
-            // ARCHITECTURAL IMPLEMENTATION & SYSTEM DESIGN
+        // ARCHITECTURAL IMPLEMENTATION & SYSTEM DESIGN
           </h4>
+
           <p className="text-base sm:text-lg text-[var(--foreground)] leading-relaxed">
             {project.architectureDetail}
           </p>
         </div>
 
         {/* Technologies List */}
-        <div className="flex flex-col gap-3 border-t border-[var(--border)]" style={{ paddingTop: "12px" }}>
+        <div
+          className="flex flex-col gap-3 border-t border-[var(--border)]"
+          style={{
+            paddingTop: "12px",
+          }}
+        >
           <span className="font-mono text-xs text-[var(--dim)] block">
-            // ECOSYSTEM & PROTOCOLS
+        // ECOSYSTEM & PROTOCOLS
           </span>
-          <div className="flex flex-wrap gap-2" style={{ paddingTop: "4px" }}>
+
+          <div
+            className="flex flex-wrap gap-2"
+            style={{
+              paddingTop: "4px",
+            }}
+          >
             {project.tags.map((tag) => (
-              <span key={tag} className="tech-badge">
+              <span
+                key={tag}
+                className="tech-badge"
+              >
                 {tag}
               </span>
             ))}
@@ -151,7 +246,12 @@ export default function ProjectModal({ project, onClose }) {
         </div>
 
         {/* Actions with Targeted Magnetic Buttons */}
-        <div className="flex flex-wrap items-center gap-4 border-t border-[var(--border)]" style={{ paddingTop: "16px" }}>
+        <div
+          className="flex flex-wrap items-center gap-4 border-t border-[var(--border)]"
+          style={{
+            paddingTop: "16px",
+          }}
+        >
           {project.demoLink && (
             <MagneticButton
               href={project.demoLink}
@@ -159,7 +259,10 @@ export default function ProjectModal({ project, onClose }) {
               rel="noopener noreferrer"
               className="btn-primary"
             >
-              <span>LAUNCH APPLICATION</span>
+              <span>
+                LAUNCH APPLICATION
+              </span>
+
               <ExternalLink size={15} />
             </MagneticButton>
           )}
@@ -172,7 +275,10 @@ export default function ProjectModal({ project, onClose }) {
               className="btn-secondary"
             >
               <Github size={15} />
-              <span>INSPECT REPOSITORY</span>
+
+              <span>
+                INSPECT REPOSITORY
+              </span>
             </MagneticButton>
           )}
         </div>
