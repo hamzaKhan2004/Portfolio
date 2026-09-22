@@ -1,6 +1,6 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { profile } from "../data/portfolioData";
-import { MapPin } from "lucide-react";
+import { MapPin, Play, Pause, RotateCcw } from "lucide-react";
 
 export default function IdCard() {
   const containerRef = useRef(null);
@@ -15,6 +15,59 @@ export default function IdCard() {
   const shadowPathRef = useRef(null);
   const mainPathRef = useRef(null);
   const accentPathRef = useRef(null);
+  const videoRef = useRef(null);
+
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [hasVideoError, setHasVideoError] = useState(false);
+
+  const handlePlay = (e) => {
+    if (e) e.stopPropagation();
+    if (hasVideoError || !videoRef.current) return;
+
+    if (videoRef.current.currentTime >= videoRef.current.duration) {
+      videoRef.current.currentTime = 0;
+    }
+
+    videoRef.current
+      .play()
+      .then(() => {
+        setIsPlaying(true);
+      })
+      .catch((err) => {
+        console.warn("Unmuted playback failed, attempting muted playback:", err);
+        if (videoRef.current) {
+          videoRef.current.muted = true;
+          videoRef.current
+            .play()
+            .then(() => {
+              setIsPlaying(true);
+            })
+            .catch((mutedErr) => {
+              console.warn("Video playback failed completely:", mutedErr);
+              setHasVideoError(true);
+              setIsPlaying(false);
+            });
+        }
+      });
+  };
+
+  const handlePause = (e) => {
+    if (e) e.stopPropagation();
+    if (videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current.currentTime = 0;
+    }
+    setIsPlaying(false);
+  };
+
+  const togglePlay = (e) => {
+    if (e) e.stopPropagation();
+    if (isPlaying) {
+      handlePause(e);
+    } else {
+      handlePlay(e);
+    }
+  };
 
   useEffect(() => {
     const container = containerRef.current;
@@ -216,6 +269,7 @@ export default function IdCard() {
     let maxScroll = 1;
 
     const recalculateScrollMetrics = () => {
+      const isDesktop = window.innerWidth >= 1024;
       const aboutDock = document.getElementById("about-card-target");
       const aboutEl = document.getElementById("about");
       if (!card) return;
@@ -227,24 +281,24 @@ export default function IdCard() {
       maxScroll =
         aboutEl && aboutEl.offsetTop > 0 ? aboutEl.offsetTop : window.innerHeight;
 
-      const isDockVisible =
-        aboutDock && window.getComputedStyle(aboutDock).display !== "none";
-
-      if (isDockVisible) {
+      if (isDesktop && aboutDock) {
         const dockRect = aboutDock.getBoundingClientRect();
-        const dockDocTop = dockRect.top + window.scrollY;
-        const dockDocLeft = dockRect.left + window.scrollX;
+        if (dockRect.width > 0) {
+          const dockDocTop = dockRect.top + window.scrollY;
+          const dockDocLeft = dockRect.left + window.scrollX;
 
-        totalDeltaY =
-          dockDocTop - cardDocTop + (dockRect.height - cardRect.height) / 2;
-        totalDeltaX =
-          dockDocLeft - cardDocLeft + (dockRect.width - cardRect.width) / 2;
-      } else if (aboutEl) {
-        // Mobile progression down toward About
-        totalDeltaY = Math.max(250, (aboutEl.offsetTop - cardDocTop) * 0.85);
-        totalDeltaX = 0;
+          totalDeltaY =
+            dockDocTop - cardDocTop + (dockRect.height - cardRect.height) / 2;
+          totalDeltaX =
+            dockDocLeft - cardDocLeft + (dockRect.width - cardRect.width) / 2;
+        } else {
+          totalDeltaY = 0;
+          totalDeltaX = 0;
+        }
       } else {
-        totalDeltaY = window.innerHeight * 0.8;
+        // Mobile / small screen: downward card extension
+        // As user scrolls down, ID card moves DOWN (+Y), rope extends naturally
+        totalDeltaY = Math.min(280, window.innerHeight * 0.4);
         totalDeltaX = 0;
       }
     };
@@ -523,18 +577,100 @@ export default function IdCard() {
             </div>
           </div>
 
-          {/* Portrait Photo */}
+          {/* Portrait Photo & Video Media Area */}
           <div
-            className="relative overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--background)] shadow-sm"
+            className="relative overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--background)] shadow-sm h-56 group cursor-pointer"
             style={{ marginTop: "20px", marginBottom: "20px" }}
+            onClick={togglePlay}
+            onPointerDown={(e) => e.stopPropagation()}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                togglePlay(e);
+              }
+            }}
+            aria-label={isPlaying ? "Pause introduction video" : "Play introduction video"}
           >
+            {/* Existing Profile Image (Default Black-and-White, Color on Hover) */}
             <img
               src={profile.avatarUrl}
               alt="Hamza Akil Khan"
-              className="w-full h-56 object-cover object-center filter grayscale contrast-105 hover:grayscale-0 transition-all duration-500"
+              className={`w-full h-full object-cover object-center filter grayscale contrast-105 group-hover:grayscale-0 group-hover:contrast-100 transition-all duration-500 ${isPlaying && !hasVideoError ? "opacity-0 pointer-events-none" : "opacity-100"
+                }`}
               loading="eager"
             />
+
+            {/* Introduction Video */}
+            {!hasVideoError && (
+              <video
+                ref={videoRef}
+                src="/My_video.mp4"
+                playsInline
+                preload="metadata"
+                onPlay={() => setIsPlaying(true)}
+                onPause={() => {
+                  if (videoRef.current) videoRef.current.currentTime = 0;
+                  setIsPlaying(false);
+                }}
+                onEnded={() => {
+                  if (videoRef.current) videoRef.current.currentTime = 0;
+                  setIsPlaying(false);
+                }}
+                onError={() => {
+                  setHasVideoError(true);
+                  setIsPlaying(false);
+                }}
+                className={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-300 ${isPlaying ? "opacity-100" : "opacity-0 pointer-events-none"
+                  }`}
+              />
+            )}
+
+            {/* Subtle Gradient Overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-[var(--surface)]/70 via-transparent to-transparent pointer-events-none" />
+
+            {/* Desktop Hover Play Button Overlay (Visible ONLY on hover over the image, never in default idle state) */}
+            {!isPlaying && !hasVideoError && (
+              <div
+                className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+              >
+                <div
+                  className="w-12 h-12 rounded-full flex items-center justify-center bg-black/65 hover:bg-black/85 backdrop-blur-md border border-white/30 shadow-xl text-white transition-transform duration-200 group-hover:scale-105 active:scale-95"
+                  aria-hidden="true"
+                >
+                  <Play size={20} className="text-white fill-white translate-x-0.5" />
+                </div>
+              </div>
+            )}
+
+            {/* Small Non-Obstructive Video Control Badge (Positioned at bottom corner, away from face) */}
+            {!hasVideoError && (
+              <button
+                type="button"
+                onClick={togglePlay}
+                onPointerDown={(e) => e.stopPropagation()}
+                aria-label={isPlaying ? "Pause introduction video" : "Play introduction video"}
+                title={isPlaying ? "Pause video" : "Play introduction video"}
+                className="absolute bottom-2.5 right-2.5 z-20 inline-flex items-center gap-5 px-2.5 py-1 rounded-full bg-black/65 hover:bg-black/85 active:bg-black/95 backdrop-blur-md border border-[var(--accent)]/40 text-[var(--accent)] text-[10px] font-mono tracking-wider shadow-md transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+              >
+                {isPlaying ? (
+                  <>
+                    <Pause size={10} style={{
+                      padding: "10px 0px",
+                    }} className="text-[var(--accent)] fill-[var(--accent)]" />
+                    <span style={{ marginRight: "15px" }}>PAUSE</span>
+                  </>
+                ) : (
+                  <>
+                    <Play size={10} style={{
+                      padding: "10px 0px",
+                    }} className="text-[var(--accent)] fill-[var(--accent)] translate-x-0.5" />
+                    <span style={{ marginRight: "15px" }} className="">VIDEO</span>
+                  </>
+                )}
+              </button>
+            )}
           </div>
 
           {/* Card Typography & Details */}
