@@ -1,0 +1,23 @@
+// Centralized shared technology configuration for Landing Cursor Trail & Footer Physics
+export const TECHNOLOGY_CONFIG = [
+  { name: "React", icon: "/tech_icons/react.svg" },
+  { name: "JavaScript", icon: "/tech_icons/javascript.svg" },
+  { name: "Node.js", icon: "/tech_icons/nodejs.svg" },
+  { name: "TypeScript", icon: "/tech_icons/typescript.svg" },
+  { name: "MongoDB", icon: "/tech_icons/mongodb.svg" },
+  { name: "Next.js", icon: "/tech_icons/nextjs.svg" },
+  { name: "Express", icon: "/tech_icons/express.svg" },
+  { name: "Tailwind CSS", icon: "/tech_icons/tailwind.svg" },
+  { name: "CSS", icon: "/tech_icons/css3.svg" },
+  { name: "GSAP", icon: "/tech_icons/gsap.svg" },
+  { name: "Socket.io", icon: "/tech_icons/socketio.svg" },
+  { name: "WebRTC", icon: "/tech_icons/webrtc.svg" },
+  { name: "Gemini AI", icon: "/tech_icons/geminiai.svg" },
+  { name: "GitHub", icon: "/tech_icons/github.svg" },
+  { name: "Docker", icon: "/tech_icons/docker.svg" },
+  { name: "AWS", icon: "/tech_icons/aws.svg" },
+  { name: "Postman", icon: "/tech_icons/postman.svg" },
+  { name: "VS Code", icon: "/tech_icons/vscode.svg" },
+  { name: "Tavily", icon: "/tech_icons/tavily.svg" },
+  { name: "Agentic AI", icon: "/tech_icons/agentic-ai.svg" },
+];

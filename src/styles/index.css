@@ -338,3 +338,30 @@ input:focus-visible {
     transition-duration: 0.001ms !important;
   }
 }
+
+/* Mobile Sticky Featured Technology Showcase */
+.mobile-sticky-tech {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 68px;
+  z-index: 20;
+}
+
+@media (max-width: 1023px) {
+  .mobile-sticky-tech {
+    background-color: var(--background);
+    padding-top: 6px;
+    padding-bottom: 10px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .mobile-sticky-tech {
+    top: 7rem; /* 112px = lg:top-28 */
+    z-index: auto;
+    background-color: transparent;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
+

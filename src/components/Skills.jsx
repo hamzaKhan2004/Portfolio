@@ -95,6 +95,74 @@ const TECH_STACK = [
 
 export default function Skills() {
   const [activeTech, setActiveTech] = useState(TECH_STACK[0]);
+  const activeTechIdRef = useRef(activeTech.id);
+  activeTechIdRef.current = activeTech.id;
+  const itemRefs = useRef({});
+  const cardRef = useRef(null);
+
+  useEffect(() => {
+    let rafId = null;
+
+    const handleScroll = () => {
+      // Only execute scroll detection on mobile/tablet screens (< 1024px)
+      if (typeof window === 'undefined' || window.innerWidth >= 1024) return;
+
+      if (rafId) return;
+
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        if (window.innerWidth >= 1024) return;
+
+        // Calculate focal trigger line just below the sticky featured card
+        let focalY = window.innerHeight * 0.42;
+        if (cardRef.current) {
+          const cardRect = cardRef.current.getBoundingClientRect();
+          focalY = Math.max(cardRect.bottom + 32, window.innerHeight * 0.35);
+        }
+
+        let closestTech = null;
+        let minDistance = Infinity;
+
+        for (const tech of TECH_STACK) {
+          const el = itemRefs.current[tech.id];
+          if (!el) continue;
+
+          const rect = el.getBoundingClientRect();
+
+          // Exact match if item spans across the focal threshold
+          if (rect.top <= focalY && rect.bottom >= focalY) {
+            closestTech = tech;
+            break;
+          }
+
+          // Otherwise track the item whose center is closest to focal line
+          const itemCenter = (rect.top + rect.bottom) / 2;
+          const distance = Math.abs(itemCenter - focalY);
+          if (distance < minDistance) {
+            minDistance = distance;
+            closestTech = tech;
+          }
+        }
+
+        if (closestTech && closestTech.id !== activeTechIdRef.current) {
+          activeTechIdRef.current = closestTech.id;
+          setActiveTech(closestTech);
+        }
+      });
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleScroll, { passive: true });
+
+    // Initial check on mount
+    handleScroll();
+
+    return () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+    };
+  }, []);
 
   return (
     <section id="stack" className="section-spacing border-b border-[var(--border)] relative bg-[var(--background)]">
@@ -115,9 +183,9 @@ export default function Skills() {
         </div>
 
         {/* 2-Column Split: Left = Technology Index, Right = Sticky Dynamic Description */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
-          {/* Description Card — on mobile shows ABOVE the list (order-first) */}
-          <div className="lg:col-span-5 lg:sticky lg:top-28 order-first lg:order-last">
+        <div className="flex flex-col lg:grid lg:grid-cols-12 gap-8 lg:gap-14 lg:items-start relative">
+          {/* Description Card — on mobile stays sticky near the top of the viewport */}
+          <div ref={cardRef} className="mobile-sticky-tech lg:col-span-5 order-first lg:order-last">
             <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-xl flex flex-col gap-6" style={{ padding: "28px" }}>
               {/* Header with Icon & Category */}
               <div className="flex items-center justify-between border-b border-[var(--border)]" style={{ paddingBottom: "20px" }}>
@@ -171,19 +239,33 @@ export default function Skills() {
               return (
                 <div
                   key={tech.id}
-                  onMouseEnter={() => setActiveTech(tech)}
-                  onClick={() => setActiveTech(tech)}
-                  className={`flex items-center justify-between cursor-pointer transition-all duration-200 group rounded-lg ${
-                    isActive ? 'bg-[var(--surface)] text-[var(--accent)]' : 'hover:bg-[var(--surface)]/40'
+                  ref={(el) => (itemRefs.current[tech.id] = el)}
+                  onMouseEnter={() => {
+                    if (typeof window !== 'undefined' && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+                      activeTechIdRef.current = tech.id;
+                      setActiveTech(tech);
+                    }
+                  }}
+                  onClick={() => {
+                    activeTechIdRef.current = tech.id;
+                    setActiveTech(tech);
+                  }}
+                  className={`flex items-center justify-between cursor-pointer transition-colors duration-200 group rounded-lg ${
+                    isActive ? 'bg-[var(--surface)] text-[var(--accent)]' : 'lg:hover:bg-[var(--surface)]/40'
                   }`}
                   style={{ paddingTop: "20px", paddingBottom: "20px", paddingLeft: "12px", paddingRight: "12px" }}
                   role="button"
                   tabIndex={0}
-                  onKeyDown={(e) => e.key === 'Enter' && setActiveTech(tech)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      activeTechIdRef.current = tech.id;
+                      setActiveTech(tech);
+                    }
+                  }}
                   aria-label={`View details for ${tech.name}`}
                 >
                   <div className="flex items-center gap-5 sm:gap-7">
-                    <span className="font-mono text-xs sm:text-sm text-[var(--dim)] group-hover:text-[var(--accent)] transition-colors">
+                    <span className="font-mono text-xs sm:text-sm text-[var(--dim)] lg:group-hover:text-[var(--accent)] transition-colors">
                       {tech.id}
                     </span>
                     <div className="flex items-center gap-3">
@@ -191,7 +273,7 @@ export default function Skills() {
                         <img src={tech.icon} alt="" className="w-4 h-4 object-contain" />
                       </div>
                       <span
-                        className={`font-sans font-medium text-xl sm:text-2xl tracking-tight transition-transform duration-200 group-hover:translate-x-1.5 ${
+                        className={`font-sans font-medium text-xl sm:text-2xl tracking-tight transition-transform duration-200 lg:group-hover:translate-x-1.5 ${
                           isActive ? 'text-[var(--accent)] font-semibold' : 'text-[var(--foreground)]'
                         }`}
                       >
@@ -207,7 +289,7 @@ export default function Skills() {
                     <ArrowUpRight
                       size={18}
                       className={`transition-opacity duration-200 ${
-                        isActive ? 'opacity-100 text-[var(--accent)]' : 'opacity-0 group-hover:opacity-100 text-[var(--muted)]'
+                        isActive ? 'opacity-100 text-[var(--accent)]' : 'opacity-0 lg:group-hover:opacity-100 text-[var(--muted)]'
                       }`}
                     />
                   </div>
@@ -215,6 +297,9 @@ export default function Skills() {
               );
             })}
           </div>
+
+          {/* Mobile Bottom Runway Spacer: Ensures the last items (WebRTC, Gemini AI) can scroll fully into view below the sticky model */}
+          <div className="block lg:hidden" style={{ height: "140px" }} aria-hidden="true" />
         </div>
       </div>
     </section>

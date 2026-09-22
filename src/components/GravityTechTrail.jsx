@@ -1,20 +1,9 @@
 import React, { useEffect, useRef } from "react";
 
-// Technologies Hamza actually uses
-const TECH_LOGOS = [
-  { name: "React", icon: "/tech_icons/react.svg" },
-  { name: "Node.js", icon: "/tech_icons/nodejs.svg" },
-  { name: "JavaScript", icon: "/tech_icons/javascript.svg" },
-  { name: "TypeScript", icon: "/tech_icons/typescript.svg" },
-  { name: "MongoDB", icon: "/tech_icons/mongodb.svg" },
-  { name: "Next.js", icon: "/tech_icons/nextjs.svg" },
-  { name: "Tailwind CSS", icon: "/tech_icons/tailwind.svg" },
-  { name: "GSAP", icon: "/tech_icons/gsap.svg" },
-  { name: "Gemini AI", icon: "/tech_icons/geminiai.svg" },
-  { name: "Socket.io", icon: "/tech_icons/socketio.svg" },
-  { name: "WebRTC", icon: "/tech_icons/webrtc.svg" },
-  { name: "Express", icon: "/tech_icons/express.svg" },
-];
+import { TECHNOLOGY_CONFIG } from "../data/technologies";
+
+// Technologies Hamza actually uses from shared source of truth
+const TECH_LOGOS = TECHNOLOGY_CONFIG;
 
 const TRAIL_CONFIG = {
   // Spawn control
@@ -112,7 +101,8 @@ export default function GravityTechTrail({ containerRef }) {
         <img
           src="${tech.icon}"
           alt="${tech.name}"
-          class="w-8 h-8 object-contain filter brightness-110 saturate-150"
+          class="w-8 h-8 object-contain shrink-0 filter brightness-110 saturate-150 pointer-events-none"
+          style="width: 32px; height: 32px; flex-shrink: 0;"
         />
 
         <span

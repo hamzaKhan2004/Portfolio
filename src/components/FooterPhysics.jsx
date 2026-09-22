@@ -1,19 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Matter from 'matter-js';
 
-const TECH_ITEMS = [
-  { name: 'React', icon: '/tech_icons/react.svg' },
-  { name: 'JavaScript', icon: '/tech_icons/javascript.svg' },
-  { name: 'Node.js', icon: '/tech_icons/nodejs.svg' },
-  { name: 'MongoDB', icon: '/tech_icons/mongodb.svg' },
-  { name: 'TypeScript', icon: '/tech_icons/typescript.svg' },
-  { name: 'Next.js', icon: '/tech_icons/nextjs.svg' },
-  { name: 'Tailwind', icon: '/tech_icons/tailwind.svg' },
-  { name: 'GSAP', icon: '/tech_icons/gsap.svg' },
-  { name: 'Socket.io', icon: '/tech_icons/socketio.svg' },
-  { name: 'WebRTC', icon: '/tech_icons/webrtc.svg' },
-  { name: 'Gemini AI', icon: '/tech_icons/geminiai.svg' }
-];
+import { TECHNOLOGY_CONFIG } from '../data/technologies';
+
+const TECH_ITEMS = TECHNOLOGY_CONFIG;
 
 export default function FooterPhysics() {
   const sceneRef = useRef(null);
@@ -54,10 +44,10 @@ export default function FooterPhysics() {
 
     Composite.add(engine.world, [floor, leftWall, rightWall, ceiling]);
 
-    // Select items
-    const selectedTech = isMobile ? TECH_ITEMS.slice(0, 6) : TECH_ITEMS;
-    const itemWidth = isMobile ? 106 : 124;
-    const itemHeight = 36;
+    // Select items from shared source of truth
+    const selectedTech = isMobile ? TECH_ITEMS.slice(0, 10) : TECH_ITEMS;
+    const itemWidth = isMobile ? 116 : 136;
+    const itemHeight = 38;
 
     const bodiesWithElements = [];
 
@@ -65,7 +55,7 @@ export default function FooterPhysics() {
     selectedTech.forEach((tech, i) => {
       const el = document.createElement('div');
       el.className =
-        'absolute cursor-grab active:cursor-grabbing select-none flex items-center justify-center gap-2 rounded-full border border-[var(--border-strong)] bg-[var(--surface)] text-[var(--foreground)] shadow-sm transition-shadow hover:border-[var(--accent)] hover:shadow-md opacity-0';
+        'absolute cursor-grab active:cursor-grabbing select-none flex items-center justify-center gap-2.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface)] text-[var(--foreground)] shadow-sm transition-shadow hover:border-[var(--accent)] hover:shadow-md opacity-0';
       el.style.paddingLeft = '12px';
       el.style.paddingRight = '12px';
       el.style.paddingTop = '6px';
@@ -78,8 +68,13 @@ export default function FooterPhysics() {
       el.style.touchAction = 'none';
 
       el.innerHTML = `
-        <img src="${tech.icon}" alt="" class="w-3.5 h-3.5 object-contain filter grayscale contrast-125 pointer-events-none" />
-        <span class="font-mono text-[11px] font-medium tracking-wide pointer-events-none text-[var(--foreground)]">${tech.name}</span>
+        <img
+          src="${tech.icon}"
+          alt="${tech.name}"
+          class="w-5 h-5 object-contain shrink-0 pointer-events-none filter brightness-110 saturate-150"
+          style="width: 20px; height: 20px; flex-shrink: 0;"
+        />
+        <span class="font-mono text-[11px] font-medium tracking-wide pointer-events-none text-[var(--foreground)] whitespace-nowrap">${tech.name}</span>
       `;
 
       elementsContainer.appendChild(el);
