@@ -3,9 +3,13 @@ import { projects } from '../data/portfolioData';
 import { ArrowUpRight, ExternalLink, Github, Layers } from 'lucide-react';
 import MagneticButton from './MagneticButton';
 import gsap from 'gsap';
+import { getLenis } from '../animations/useLenisScroll';
 
 export default function Projects({ onSelectProject }) {
   const [hoveredProject, setHoveredProject] = useState(null);
+  const hoveredProjectRef = useRef(null);
+  hoveredProjectRef.current = hoveredProject;
+  const activeArticleRef = useRef(null);
   const followerRef = useRef(null);
   const lastMousePos = useRef({ x: 0, y: 0 });
 
@@ -61,8 +65,61 @@ export default function Projects({ onSelectProject }) {
       rotTo(tilt);
     };
 
+    let scrollRafId = null;
+
+    const handleScroll = () => {
+      if (!hoveredProjectRef.current) return;
+      if (scrollRafId) return;
+
+      scrollRafId = requestAnimationFrame(() => {
+        scrollRafId = null;
+        if (!hoveredProjectRef.current) return;
+
+        const el =
+          activeArticleRef.current ||
+          document.querySelector(
+            `#work article[data-project-id="${hoveredProjectRef.current.id}"]`
+          );
+
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          const { x, y } = lastMousePos.current;
+
+          // Check if cursor is still within the project row's current bounding rectangle
+          const isInside =
+            x >= rect.left &&
+            x <= rect.right &&
+            y >= rect.top &&
+            y <= rect.bottom;
+
+          if (!isInside) {
+            setHoveredProject(null);
+            activeArticleRef.current = null;
+          }
+        } else {
+          setHoveredProject(null);
+          activeArticleRef.current = null;
+        }
+      });
+    };
+
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    const lenis = getLenis();
+    if (lenis) {
+      lenis.on('scroll', handleScroll);
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('scroll', handleScroll);
+      if (lenis) {
+        lenis.off('scroll', handleScroll);
+      }
+      if (scrollRafId) {
+        cancelAnimationFrame(scrollRafId);
+      }
+    };
   }, []);
 
   return (
@@ -91,7 +148,12 @@ export default function Projects({ onSelectProject }) {
             return (
               <article
                 key={proj.id}
-                onMouseEnter={() => setHoveredProject(proj)}
+                data-project-id={proj.id}
+                onMouseEnter={(e) => {
+                  setHoveredProject(proj);
+                  activeArticleRef.current = e.currentTarget;
+                  lastMousePos.current = { x: e.clientX, y: e.clientY };
+                }}
                 onMouseLeave={(e) => {
                   // Keep preview active if moving into the floating card or another project row
                   if (followerRef.current && e.relatedTarget && followerRef.current.contains(e.relatedTarget)) {
@@ -101,6 +163,7 @@ export default function Projects({ onSelectProject }) {
                     return;
                   }
                   setHoveredProject(null);
+                  activeArticleRef.current = null;
                 }}
                 className={`group transition-colors duration-300 ${isHovered ? 'bg-[var(--surface)]/35' : 'bg-transparent'
                   }`}
@@ -295,12 +358,14 @@ export default function Projects({ onSelectProject }) {
               e.stopPropagation();
               onSelectProject(hoveredProject);
               setHoveredProject(null);
+              activeArticleRef.current = null;
             }}
             onMouseLeave={(e) => {
               if (e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest('#work article')) {
                 return;
               }
               setHoveredProject(null);
+              activeArticleRef.current = null;
             }}
             className="w-[340px] rounded-xl overflow-hidden border border-[var(--border-strong)] bg-[var(--surface)] shadow-2xl pointer-events-auto cursor-pointer transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98] select-none group/preview"
             style={{ padding: "12px" }}
@@ -311,6 +376,7 @@ export default function Projects({ onSelectProject }) {
                 e.preventDefault();
                 onSelectProject(hoveredProject);
                 setHoveredProject(null);
+                activeArticleRef.current = null;
               }
             }}
           >
