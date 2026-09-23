@@ -388,17 +388,9 @@ input:focus-visible {
   }
 }
 
-/* ID Card Layout & Reserved Vertical Motion Spacing */
+/* ID Card Layout */
 #hero-id-card-wrapper {
   padding-bottom: 8px;
-}
-
-@media (max-width: 1023px) {
-  #hero-id-card-wrapper {
-    /* Reserve vertical document flow space for the card's downward scroll translation
-       so the following section (About) starts after the card's rendered area */
-    padding-bottom: calc(min(280px, 40vh) + 32px);
-  }
 }
 
 /* Proportional scaling on narrow mobile viewports to prevent overflow while preserving design */

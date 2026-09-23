@@ -108,34 +108,6 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
 
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    // ── Bounding box cache & Anchor Coordinate Cache (prevents forced reflow in loop) ──
-    let anchorPos = { x: 0, y: 0 };
-    let hookRestPos = { x: 0, y: 72 };
-
-    const updateBounds = () => {
-      boundsRef.current = card.getBoundingClientRect();
-      const cRect = container.getBoundingClientRect();
-      const aRect = anchorEl.getBoundingClientRect();
-      const hRect = hookRingEl.getBoundingClientRect();
-      anchorPos = {
-        x: aRect.left + aRect.width / 2 - cRect.left,
-        y: aRect.bottom - cRect.top,
-      };
-      hookRestPos = {
-        x: hRect.left + hRect.width / 2 - cRect.left,
-        y: hRect.top + 2 - cRect.top,
-      };
-    };
-    updateBounds();
-
-    let resizeObserver = null;
-    if (typeof ResizeObserver !== "undefined") {
-      resizeObserver = new ResizeObserver(() => {
-        updateBounds();
-      });
-      resizeObserver.observe(container);
-    }
-
     // ── Physics state ──
     // cardX, cardY = local displacement in pixels relative to resting position
     let cardX = 0;
@@ -166,6 +138,36 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
     let targetScrollOffsetX = 0;
     let scrollOffsetY = 0;
     let scrollOffsetX = 0;
+
+    // ── Bounding box cache & Anchor Coordinate Cache (prevents forced reflow in loop) ──
+    let anchorPos = { x: 0, y: 0 };
+    let hookRestPos = { x: 0, y: 72 };
+
+    const updateBounds = () => {
+      boundsRef.current = card.getBoundingClientRect();
+      const cRect = container.getBoundingClientRect();
+      const aRect = anchorEl.getBoundingClientRect();
+      const hRect = hookRingEl.getBoundingClientRect();
+      anchorPos = {
+        x: aRect.left + aRect.width / 2 - cRect.left,
+        y: aRect.bottom - cRect.top,
+      };
+      const currentTx = cardX + scrollOffsetX;
+      const currentTy = cardY + scrollOffsetY;
+      hookRestPos = {
+        x: (hRect.left + hRect.width / 2 - cRect.left) - currentTx,
+        y: (hRect.top + 2 - cRect.top) - currentTy,
+      };
+    };
+    updateBounds();
+
+    let resizeObserver = null;
+    if (typeof ResizeObserver !== "undefined") {
+      resizeObserver = new ResizeObserver(() => {
+        updateBounds();
+      });
+      resizeObserver.observe(container);
+    }
 
     // Spring tuning parameters
     const SPRING_STIFFNESS = 0.09;
@@ -243,12 +245,17 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
 
       card.style.cursor = "grabbing";
 
+      if (!animFrameId) {
+        lastTime = performance.now();
+        animFrameId = requestAnimationFrame(physicsLoop);
+      }
+
       // Capture for ALL pointer types (mouse + touch) so pointermove/pointerup
       // are always delivered to the card even when the cursor exits its bounds
       if (card.setPointerCapture) {
         try {
           card.setPointerCapture(e.pointerId);
-        } catch (_) {}
+        } catch (_) { }
       }
 
       if (e.pointerType !== "touch") {
@@ -258,13 +265,17 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
 
     const handlePointerMove = (e) => {
       if (isDragging) {
-        // Compute delta strictly from drag-start coordinates
-        // Cursor moves right -> deltaX > 0 -> pulls right
-        // Cursor moves left -> deltaX < 0 -> pulls left
-        // Cursor moves down -> deltaY > 0 -> pulls down
-        // Cursor moves up -> deltaY < 0 -> pulls up
-        const deltaX = e.clientX - dragStartPointerX;
-        const deltaY = e.clientY - dragStartPointerY;
+        // Compute delta strictly from drag-start coordinates with asymptotic elastic resistance beyond limit
+        let deltaX = e.clientX - dragStartPointerX;
+        let deltaY = e.clientY - dragStartPointerY;
+        const dist = Math.hypot(deltaX, deltaY);
+        if (dist > MAX_DISPLACEMENT) {
+          const excess = dist - MAX_DISPLACEMENT;
+          const damped = MAX_DISPLACEMENT + excess * 0.25;
+          const factor = damped / dist;
+          deltaX *= factor;
+          deltaY *= factor;
+        }
         targetCardX = dragStartCardX + deltaX;
         targetCardY = dragStartCardY + deltaY;
 
@@ -280,7 +291,7 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
 
       // Proximity 3D perspective tilt on hover (desktop only)
       if (window.innerWidth >= 1024) {
-        const bounds = boundsRef.current || card.getBoundingClientRect();
+        const bounds = card.getBoundingClientRect();
         const cx = bounds.left + bounds.width / 2;
         const cy = bounds.top + bounds.height / 2;
 
@@ -306,7 +317,7 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
       if (e && card.releasePointerCapture) {
         try {
           card.releasePointerCapture(e.pointerId);
-        } catch (_) {}
+        } catch (_) { }
       }
     };
 
@@ -351,9 +362,8 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
           totalDeltaX = 0;
         }
       } else {
-        // Mobile / small screen: downward card extension
-        // As user scrolls down, ID card moves DOWN (+Y), rope extends naturally
-        totalDeltaY = Math.min(280, window.innerHeight * 0.4);
+        // Mobile / small screen: card stays in its hero container; elastic interaction is driven by direct card touches
+        totalDeltaY = 0;
         totalDeltaX = 0;
       }
     };
@@ -370,6 +380,11 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
 
       targetScrollOffsetY = progress * totalDeltaY;
       targetScrollOffsetX = progress * totalDeltaX;
+
+      if (!animFrameId) {
+        lastTime = performance.now();
+        animFrameId = requestAnimationFrame(physicsLoop);
+      }
     };
 
     const handleResize = () => {
@@ -393,7 +408,7 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
     card.style.cursor = "grab";
 
     // ── Unified Physics Animation Loop ──
-    const physicsLoop = () => {
+    function physicsLoop() {
       const now = performance.now();
 
       // 1. Card displacement springs
@@ -412,9 +427,21 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
       cardX += velX;
       cardY += velY;
 
-      // Bound drag displacement
-      cardX = Math.max(-MAX_DISPLACEMENT, Math.min(MAX_DISPLACEMENT, cardX));
-      cardY = Math.max(-MAX_DISPLACEMENT, Math.min(MAX_DISPLACEMENT, cardY));
+      // Bound drag displacement and cancel outward momentum at limits
+      if (cardX >= MAX_DISPLACEMENT) {
+        cardX = MAX_DISPLACEMENT;
+        if (velX > 0) velX = 0;
+      } else if (cardX <= -MAX_DISPLACEMENT) {
+        cardX = -MAX_DISPLACEMENT;
+        if (velX < 0) velX = 0;
+      }
+      if (cardY >= MAX_DISPLACEMENT) {
+        cardY = MAX_DISPLACEMENT;
+        if (velY > 0) velY = 0;
+      } else if (cardY <= -MAX_DISPLACEMENT) {
+        cardY = -MAX_DISPLACEMENT;
+        if (velY < 0) velY = 0;
+      }
 
       // 2. Scroll extension spring (smooth follow)
       scrollOffsetY += (targetScrollOffsetY - scrollOffsetY) * 0.12;
@@ -456,26 +483,28 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
       animFrameId = requestAnimationFrame(physicsLoop);
     };
 
-    // Viewport-aware animation control: pause physics when card is far out of view
+    // Viewport-aware animation control: pause physics only when card and container are far out of view
     let isVisible = true;
     const visibilityObserver = new IntersectionObserver(
-      ([entry]) => {
-        isVisible = entry.isIntersecting;
-        if (isVisible) {
+      (entries) => {
+        const anyVisible = entries.some((entry) => entry.isIntersecting);
+        isVisible = anyVisible;
+        if (isVisible || isDragging) {
           lastTime = performance.now();
           if (!animFrameId) {
             animFrameId = requestAnimationFrame(physicsLoop);
           }
         } else {
-          if (animFrameId) {
+          if (animFrameId && !isDragging) {
             cancelAnimationFrame(animFrameId);
             animFrameId = null;
           }
         }
       },
-      { threshold: 0 }
+      { rootMargin: "250px 0px 250px 0px", threshold: 0 }
     );
     visibilityObserver.observe(container);
+    visibilityObserver.observe(card);
 
     animFrameId = requestAnimationFrame(physicsLoop);
 
@@ -519,22 +548,22 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
           if (onIntroSettled) onIntroSettled();
         }
       })
-      .set(container, { opacity: 1 })
-      .to(container, {
-        y: 6,
-        duration: 0.3,
-        ease: "power2.out"
-      })
-      .to(container, {
-        y: -2,
-        duration: 0.18,
-        ease: "sine.inOut"
-      })
-      .to(container, {
-        y: 0,
-        duration: 0.16,
-        ease: "power2.out"
-      });
+        .set(container, { opacity: 1 })
+        .to(container, {
+          y: 6,
+          duration: 0.3,
+          ease: "power2.out"
+        })
+        .to(container, {
+          y: -2,
+          duration: 0.18,
+          ease: "sine.inOut"
+        })
+        .to(container, {
+          y: 0,
+          duration: 0.16,
+          ease: "power2.out"
+        });
 
       // Subtle technical verification scan: travels down once across card
       if (scanLineRef.current && !scanTriggeredRef.current) {
@@ -641,307 +670,308 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
         <div
           ref={cardAssemblyRef}
           className="relative flex flex-col items-center select-none"
-        style={{
-          transformOrigin: "center top",
-          willChange: "transform",
-        }}
-      >
-        {/* Metal Clip Hook — Rigidly connected to card, moves & rotates with it */}
-        <div
-          ref={hookRef}
-          className="flex flex-col items-center pointer-events-none"
-          style={{ zIndex: 20 }}
-          aria-hidden="true"
-        >
-          {/* Metal Loop O: Where the lanyard strap attaches */}
-          <div
-            ref={hookRingRef}
-            className="w-5 h-5 rounded-full border-2 border-[var(--border-strong)] bg-[var(--surface-hover)] shadow-sm flex items-center justify-center"
-            style={{
-              boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
-            }}
-          >
-            <div className="w-2 h-2 rounded-full bg-[var(--background)]" />
-          </div>
-
-          {/* Metal Clip clamping into the punch hole */}
-          <div
-            className="w-8 h-4 bg-gradient-to-b from-[#8a909a] to-[#4a505a] rounded-sm border border-white/20 shadow-md"
-            style={{ marginTop: "-6px" }}
-          />
-        </div>
-
-        {/* Physical Identity Card */}
-        <div
-          ref={cardRef}
-          className="relative w-[290px] sm:w-[325px] rounded-2xl bg-[var(--surface)] border border-[var(--border-strong)] shadow-2xl origin-top overflow-hidden transition-shadow duration-300"
           style={{
-            boxShadow:
-              "0 30px 60px -15px rgba(0, 0, 0, 0.5), 0 0 1px 1px var(--border)",
-            transformStyle: "preserve-3d",
-            transformOrigin: "top center",
-            marginTop: "-6px",
-            padding: "24px",
-            userSelect: "none",
-            touchAction: "none",
+            transformOrigin: "center top",
+            willChange: "transform",
           }}
         >
+          {/* Metal Clip Hook — Rigidly connected to card, moves & rotates with it */}
           <div
-            ref={glareRef}
-            className="absolute inset-0 pointer-events-none transition-opacity duration-300 z-30"
+            ref={hookRef}
+            className="flex flex-col items-center pointer-events-none"
+            style={{ zIndex: 20 }}
             aria-hidden="true"
-          />
-
-          {/* Technical Verification Scan Line (single sweep on entrance) */}
-          <div
-            ref={scanLineRef}
-            className="absolute left-0 right-0 pointer-events-none z-30 opacity-0"
-            style={{
-              height: "2px",
-              background: "linear-gradient(90deg, transparent 0%, var(--accent) 50%, transparent 100%)",
-              boxShadow: "0 0 10px 1px var(--accent)",
-              top: 0,
-            }}
-            aria-hidden="true"
-          />
-
-          <div
-            className="w-9 h-2.5 rounded-full bg-[var(--background)] border border-[var(--border)] shadow-inner"
-            style={{
-              marginLeft: "auto",
-              marginRight: "auto",
-              marginBottom: "20px",
-            }}
-          />
-
-          <div
-            className="flex items-center justify-between border-b border-[var(--border)]"
-            style={{ paddingBottom: "14px" }}
           >
-            <div className="flex items-center" style={{ gap: "8px" }}>
-              <span className="font-sans font-bold text-sm tracking-tight text-[var(--foreground)]">
-                {profile.initials}
-              </span>
-              <span className="font-mono text-[10px] text-[var(--dim)] tracking-wider">
-                // CREATIVE TECH
-              </span>
-            </div>
-
+            {/* Metal Loop O: Where the lanyard strap attaches */}
             <div
-              className="flex items-center rounded bg-[var(--accent-dim)] border border-[var(--accent)]/35"
+              ref={hookRingRef}
+              className="w-5 h-5 rounded-full border-2 border-[var(--border-strong)] bg-[var(--surface-hover)] shadow-sm flex items-center justify-center"
               style={{
-                gap: "6px",
-                paddingLeft: "10px",
-                paddingRight: "10px",
-                paddingTop: "2px",
-                paddingBottom: "2px",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
               }}
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-pulse" />
-              <span className="font-mono text-[10px] font-semibold text-[var(--accent)] tracking-wider">
-                VERIFIED
-              </span>
+              <div className="w-2 h-2 rounded-full bg-[var(--background)]" />
             </div>
+
+            {/* Metal Clip clamping into the punch hole */}
+            <div
+              className="w-8 h-4 bg-gradient-to-b from-[#8a909a] to-[#4a505a] rounded-sm border border-white/20 shadow-md"
+              style={{ marginTop: "-6px" }}
+            />
           </div>
 
+          {/* Physical Identity Card */}
           <div
-            className="relative overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--background)] shadow-sm h-56 group cursor-pointer"
-            style={{ marginTop: "20px", marginBottom: "20px" }}
-            data-no-drag
-            onClick={togglePlay}
-            onPointerDown={(e) => e.stopPropagation()}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                togglePlay(e);
-              }
+            ref={cardRef}
+            className="relative w-[290px] sm:w-[325px] rounded-2xl bg-[var(--surface)] border border-[var(--border-strong)] shadow-2xl origin-top overflow-hidden transition-shadow duration-300"
+            style={{
+              boxShadow:
+                "0 30px 60px -15px rgba(0, 0, 0, 0.5), 0 0 1px 1px var(--border)",
+              transformStyle: "preserve-3d",
+              transformOrigin: "top center",
+              marginTop: "-6px",
+              padding: "24px",
+              userSelect: "none",
+              touchAction: "none",
             }}
-            aria-label={isPlaying ? "Pause introduction video" : "Play introduction video"}
           >
-            {/* Existing Profile Image (Default Color on Mobile, Grayscale to Color on Hover on Desktop) */}
-            <img
-              src={profile.avatarUrl}
-              alt="Hamza Akil Khan"
-              className={`w-full h-full object-cover object-center filter max-lg:grayscale-0 max-lg:contrast-100 lg:grayscale lg:contrast-105 lg:group-hover:grayscale-0 lg:group-hover:contrast-100 transition-all duration-500 ${isPlaying && !hasVideoError ? "opacity-0 pointer-events-none" : "opacity-100"
-                }`}
-              loading="eager"
+            <div
+              ref={glareRef}
+              className="absolute inset-0 pointer-events-none transition-opacity duration-300 z-30"
+              aria-hidden="true"
             />
 
-            {/* Introduction Video */}
-            {!hasVideoError && (
-              <video
-                ref={videoRef}
-                src="/My_video.mp4"
-                muted={isMuted}
-                playsInline
-                preload="metadata"
-                onPlay={() => setIsPlaying(true)}
-                onPause={() => {
-                  if (videoRef.current) videoRef.current.currentTime = 0;
-                  setIsPlaying(false);
-                }}
-                onEnded={() => {
-                  if (videoRef.current) videoRef.current.currentTime = 0;
-                  setIsPlaying(false);
-                }}
-                onError={() => {
-                  setHasVideoError(true);
-                  setIsPlaying(false);
-                }}
-                className={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-300 ${isPlaying ? "opacity-100" : "opacity-0 pointer-events-none"
-                  }`}
-              />
-            )}
-
-            {/* Subtle Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-[var(--surface)]/70 via-transparent to-transparent pointer-events-none" />
-
-            {/* Desktop Hover Play Button Overlay (Visible ONLY on hover over the image, never in default idle state) */}
-            {!isPlaying && !hasVideoError && (
-              <div
-                className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-              >
-                <div
-                  className="w-12 h-12 rounded-full flex items-center justify-center bg-black/65 hover:bg-black/85 backdrop-blur-md border border-white/30 shadow-xl text-white transition-transform duration-200 group-hover:scale-105 active:scale-95"
-                  aria-hidden="true"
-                >
-                  <Play size={20} className="text-white fill-white translate-x-0.5" />
-                </div>
-              </div>
-            )}
-
-            {/* Small Non-Obstructive Video Control Badge (Positioned at bottom corner, away from face) */}
-            {!hasVideoError && (
-              <button
-                type="button"
-                data-no-drag
-                onClick={togglePlay}
-                onPointerDown={(e) => e.stopPropagation()}
-                aria-label={isPlaying ? "Pause introduction video" : "Play introduction video"}
-                title={isPlaying ? "Pause video" : "Play introduction video"}
-                className="absolute bottom-2.5 right-2.5 z-20 inline-flex items-center gap-5 px-2.5 py-1 rounded-full bg-black/65 hover:bg-black/85 active:bg-black/95 backdrop-blur-md border border-[var(--accent)]/40 text-[var(--accent)] text-[10px] font-mono tracking-wider shadow-md transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
-              >
-                {isPlaying ? (
-                  <>
-                    <Pause size={10} style={{
-                      padding: "10px 0px",
-                    }} className="text-[var(--accent)] fill-[var(--accent)]" />
-                    <span style={{ marginRight: "15px" }}>PAUSE</span>
-                  </>
-                ) : (
-                  <>
-                    <Play size={10} style={{
-                      padding: "10px 0px",
-                    }} className="text-[var(--accent)] fill-[var(--accent)] translate-x-0.5" />
-                    <span style={{ marginRight: "15px" }} className="">VIDEO</span>
-                  </>
-                )}
-              </button>
-            )}
-          </div>
-
-          <div className="space-y-2.5">
-            <div>
-              <h3 className="font-sans font-semibold text-xl text-[var(--foreground)] tracking-tight">
-                {profile.name}
-              </h3>
-              <p className="font-mono text-xs text-[var(--accent)] font-medium tracking-wide">
-                {profile.role}
-              </p>
-            </div>
-
+            {/* Technical Verification Scan Line (single sweep on entrance) */}
             <div
-              className="flex items-center justify-between text-xs text-[var(--muted)] border-t border-[var(--border)]"
-              style={{ paddingTop: "4px" }}
-            >
-              <span
-                className="inline-flex items-center font-mono text-[11px]"
-                style={{ gap: "6px", paddingTop: "4px" }}
-              >
-                <MapPin size={11} className="text-[var(--accent)]" />
-                {profile.location}
-              </span>
-              <span
-                className="font-mono text-[11px] text-[var(--dim)]"
-                style={{ paddingTop: "4px" }}
-              >
-                B.E. // GRAD
-              </span>
-            </div>
-          </div>
-
-          <div
-            className="border-t border-[var(--border)] flex items-center justify-between"
-            style={{ marginTop: "16px", paddingTop: "12px" }}
-          >
-            {/* Barcode */}
-            <div
-              className="flex items-end h-4"
-              style={{ gap: "2px" }}
+              ref={scanLineRef}
+              className="absolute left-0 right-0 pointer-events-none z-30 opacity-0"
+              style={{
+                height: "2px",
+                background: "linear-gradient(90deg, transparent 0%, var(--accent) 50%, transparent 100%)",
+                boxShadow: "0 0 10px 1px var(--accent)",
+                top: 0,
+              }}
               aria-hidden="true"
+            />
+
+            <div
+              className="w-9 h-2.5 rounded-full bg-[var(--background)] border border-[var(--border)] shadow-inner"
+              style={{
+                marginLeft: "auto",
+                marginRight: "auto",
+                marginBottom: "20px",
+              }}
+            />
+
+            <div
+              className="flex items-center justify-between border-b border-[var(--border)]"
+              style={{ paddingBottom: "14px" }}
             >
-              <span className="w-[1.5px] h-full bg-[var(--muted)]" />
-              <span className="w-[3px] h-3 bg-[var(--muted)]" />
-              <span className="w-[1px] h-full bg-[var(--muted)]" />
-              <span className="w-[2px] h-2 bg-[var(--muted)]" />
-              <span className="w-[1.5px] h-full bg-[var(--muted)]" />
-              <span className="w-[4px] h-full bg-[var(--muted)]" />
-              <span className="w-[1px] h-3 bg-[var(--muted)]" />
-              <span className="w-[2.5px] h-full bg-[var(--muted)]" />
-              <span className="w-[1px] h-2 bg-[var(--muted)]" />
-              <span className="w-[3px] h-full bg-[var(--muted)]" />
+              <div className="flex items-center" style={{ gap: "8px" }}>
+                <span className="font-sans font-bold text-sm tracking-tight text-[var(--foreground)]">
+                  {profile.initials}
+                </span>
+                <span className="font-mono text-[10px] text-[var(--dim)] tracking-wider">
+                // CREATIVE TECH
+                </span>
+              </div>
+
+              <div
+                className="flex items-center rounded bg-[var(--accent-dim)] border border-[var(--accent)]/35"
+                style={{
+                  gap: "6px",
+                  paddingLeft: "10px",
+                  paddingRight: "10px",
+                  paddingTop: "2px",
+                  paddingBottom: "2px",
+                }}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-pulse" />
+                <span className="font-mono text-[10px] font-semibold text-[var(--accent)] tracking-wider">
+                  VERIFIED
+                </span>
+              </div>
             </div>
 
-            {/* Video Play & Mute Controls (Placed right where the user indicated) */}
             <div
-              className="flex items-center gap-2"
+              className="relative overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--background)] shadow-sm h-56 group cursor-pointer"
+              style={{ marginTop: "20px", marginBottom: "20px", cursor: "pointer" }}
               data-no-drag
+              onClick={togglePlay}
               onPointerDown={(e) => e.stopPropagation()}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  togglePlay(e);
+                }
+              }}
+              aria-label={isPlaying ? "Pause introduction video" : "Play introduction video"}
             >
-              {!hasVideoError && (
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={togglePlay}
-                    onPointerDown={(e) => e.stopPropagation()}
-                    className="w-6 h-6 rounded flex items-center justify-center border border-[var(--border)] bg-[var(--surface-hover)]/60 text-[var(--muted)] hover:text-[var(--accent)] hover:border-[var(--accent)] transition-colors cursor-pointer"
-                    aria-label={isPlaying ? "Pause video" : "Play video"}
-                    title={isPlaying ? "Pause video" : "Play video"}
-                  >
-                    {isPlaying ? (
-                      <Pause size={10} className="fill-current text-[var(--accent)]" />
-                    ) : (
-                      <Play size={10} className="fill-current text-[var(--accent)] translate-x-0.5" />
-                    )}
-                  </button>
+              {/* Existing Profile Image (Default Color on Mobile, Grayscale to Color on Hover on Desktop) */}
+              <img
+                src={profile.avatarUrl}
+                alt="Hamza Akil Khan"
+                className={`w-full h-full object-cover object-center filter max-lg:grayscale-0 max-lg:contrast-100 lg:grayscale lg:contrast-105 lg:group-hover:grayscale-0 lg:group-hover:contrast-100 transition-all duration-500 ${isPlaying && !hasVideoError ? "opacity-0 pointer-events-none" : "opacity-100"
+                  }`}
+                loading="eager"
+              />
 
-                  <button
-                    type="button"
-                    onClick={toggleMute}
-                    onPointerDown={(e) => e.stopPropagation()}
-                    className="w-6 h-6 rounded flex items-center justify-center border border-[var(--border)] bg-[var(--surface-hover)]/60 text-[var(--muted)] hover:text-[var(--accent)] hover:border-[var(--accent)] transition-colors cursor-pointer"
-                    aria-label={isMuted ? "Unmute video" : "Mute video"}
-                    title={isMuted ? "Unmute video" : "Mute video"}
+              {/* Introduction Video */}
+              {!hasVideoError && (
+                <video
+                  ref={videoRef}
+                  src="/My_video.mp4"
+                  muted={isMuted}
+                  playsInline
+                  preload="metadata"
+                  onPlay={() => setIsPlaying(true)}
+                  onPause={() => {
+                    if (videoRef.current) videoRef.current.currentTime = 0;
+                    setIsPlaying(false);
+                  }}
+                  onEnded={() => {
+                    if (videoRef.current) videoRef.current.currentTime = 0;
+                    setIsPlaying(false);
+                  }}
+                  onError={() => {
+                    setHasVideoError(true);
+                    setIsPlaying(false);
+                  }}
+                  className={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-300 ${isPlaying ? "opacity-100" : "opacity-0 pointer-events-none"
+                    }`}
+                />
+              )}
+
+              {/* Subtle Gradient Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-[var(--surface)]/70 via-transparent to-transparent pointer-events-none" />
+
+              {/* Desktop Hover Play Button Overlay (Visible ONLY on hover over the image, never in default idle state) */}
+              {!isPlaying && !hasVideoError && (
+                <div
+                  className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                >
+                  <div
+                    className="w-12 h-12 rounded-full flex items-center justify-center bg-black/65 hover:bg-black/85 backdrop-blur-md border border-white/30 shadow-xl text-white transition-transform duration-200 group-hover:scale-105 active:scale-95"
+                    aria-hidden="true"
                   >
-                    {isMuted ? (
-                      <VolumeX size={11} className="text-[var(--muted)] hover:text-[var(--accent)]" />
-                    ) : (
-                      <Volume2 size={11} className="text-[var(--accent)]" />
-                    )}
-                  </button>
+                    <Play size={20} className="text-white fill-white translate-x-0.5" />
+                  </div>
                 </div>
               )}
 
-              <span className="font-mono text-[10px] text-[var(--dim)] tracking-widest">
-                HK-2026-DEV
-              </span>
+              {/* Small Non-Obstructive Video Control Badge (Positioned at bottom corner, away from face) */}
+              {!hasVideoError && (
+                <button
+                  type="button"
+                  data-no-drag
+                  onClick={togglePlay}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  aria-label={isPlaying ? "Pause introduction video" : "Play introduction video"}
+                  title={isPlaying ? "Pause video" : "Play introduction video"}
+                  className="absolute bottom-2.5 right-2.5 z-20 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/65 hover:bg-black/85 active:bg-black/95 backdrop-blur-md border border-[var(--accent)]/40 text-[var(--accent)] text-[10px] font-mono tracking-wider shadow-md transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+                  style={{ cursor: "pointer" }}
+                >
+                  {isPlaying ? (
+                    <>
+                      <Pause size={11} className="text-[var(--accent)] fill-[var(--accent)]" />
+                      <span>PAUSE</span>
+                    </>
+                  ) : (
+                    <>
+                      <Play size={11} className="text-[var(--accent)] fill-[var(--accent)] translate-x-0.5" />
+                      <span>VIDEO</span>
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+
+            <div className="space-y-2.5">
+              <div>
+                <h3 className="font-sans font-semibold text-xl text-[var(--foreground)] tracking-tight">
+                  {profile.name}
+                </h3>
+                <p className="font-mono text-xs text-[var(--accent)] font-medium tracking-wide">
+                  {profile.role}
+                </p>
+              </div>
+
+              <div
+                className="flex items-center justify-between text-xs text-[var(--muted)] border-t border-[var(--border)]"
+                style={{ paddingTop: "4px" }}
+              >
+                <span
+                  className="inline-flex items-center font-mono text-[11px]"
+                  style={{ gap: "6px", paddingTop: "4px" }}
+                >
+                  <MapPin size={11} className="text-[var(--accent)]" />
+                  {profile.location}
+                </span>
+                <span
+                  className="font-mono text-[11px] text-[var(--dim)]"
+                  style={{ paddingTop: "4px" }}
+                >
+                  B.E. // GRAD
+                </span>
+              </div>
+            </div>
+
+            <div
+              className="border-t border-[var(--border)] flex items-center justify-between"
+              style={{ marginTop: "16px", paddingTop: "12px" }}
+            >
+              {/* Barcode */}
+              <div
+                className="flex items-end h-4"
+                style={{ gap: "2px" }}
+                aria-hidden="true"
+              >
+                <span className="w-[1.5px] h-full bg-[var(--muted)]" />
+                <span className="w-[3px] h-3 bg-[var(--muted)]" />
+                <span className="w-[1px] h-full bg-[var(--muted)]" />
+                <span className="w-[2px] h-2 bg-[var(--muted)]" />
+                <span className="w-[1.5px] h-full bg-[var(--muted)]" />
+                <span className="w-[4px] h-full bg-[var(--muted)]" />
+                <span className="w-[1px] h-3 bg-[var(--muted)]" />
+                <span className="w-[2.5px] h-full bg-[var(--muted)]" />
+                <span className="w-[1px] h-2 bg-[var(--muted)]" />
+                <span className="w-[3px] h-full bg-[var(--muted)]" />
+              </div>
+
+              {/* Video Play & Mute Controls (Placed right where the user indicated) */}
+              <div
+                className="flex items-center gap-2"
+                data-no-drag
+                onPointerDown={(e) => e.stopPropagation()}
+              >
+                {!hasVideoError && (
+                  <div className="flex items-center gap-1.5 cursor-pointer" data-no-drag>
+                    <button
+                      type="button"
+                      data-no-drag
+                      onClick={togglePlay}
+                      onPointerDown={(e) => e.stopPropagation()}
+                      className="w-16 h-8 rounded cursor-pointer flex items-center justify-center border border-[var(--border)] bg-[var(--surface-hover)]/60 text-[var(--muted)] hover:text-[var(--accent)] hover:border-[var(--accent)] transition-colors "
+                      style={{ cursor: "pointer" }}
+                      aria-label={isPlaying ? "Pause video" : "Play video"}
+                      title={isPlaying ? "Pause video" : "Play video"}
+                    >
+                      {isPlaying ? (
+                        <Pause size={12} className="fill-current cursor-pointer text-[var(--accent)]" />
+                      ) : (
+                        <Play size={12} className="fill-current cursor-pointer text-[var(--accent)] translate-x-0.5" />
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      data-no-drag
+                      onClick={toggleMute}
+                      onPointerDown={(e) => e.stopPropagation()}
+                      className="w-8 h-8 rounded flex items-center justify-center border border-[var(--border)] bg-[var(--surface-hover)]/60 text-[var(--muted)] hover:text-[var(--accent)] hover:border-[var(--accent)] transition-colors cursor-pointer"
+                      style={{ cursor: "pointer" }}
+                      aria-label={isMuted ? "Unmute video" : "Mute video"}
+                      title={isMuted ? "Unmute video" : "Mute video"}
+                    >
+                      {isMuted ? (
+                        <VolumeX size={13} className="text-[var(--muted)] hover:text-[var(--accent)]" />
+                      ) : (
+                        <Volume2 size={13} className="text-[var(--accent)]" />
+                      )}
+                    </button>
+                  </div>
+                )}
+
+                <span className="font-mono text-[10px] text-[var(--dim)] tracking-widest">
+                  HK-2026-DEV
+                </span>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
     </div>
   );
 }
