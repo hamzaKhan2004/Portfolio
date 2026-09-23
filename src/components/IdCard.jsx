@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import gsap from "gsap";
 import { profile } from "../data/portfolioData";
-import { MapPin, Play, Pause, RotateCcw } from "lucide-react";
+import { MapPin, Play, Pause, RotateCcw, Volume2, VolumeX } from "lucide-react";
 
 export default function IdCard({ introPhase = "ready", onIntroSettled }) {
   const containerRef = useRef(null);
@@ -22,15 +22,21 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
   const scanTriggeredRef = useRef(false);
 
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
   const [hasVideoError, setHasVideoError] = useState(false);
 
   const handlePlay = (e) => {
-    if (e) e.stopPropagation();
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
     if (hasVideoError || !videoRef.current) return;
 
     if (videoRef.current.currentTime >= videoRef.current.duration) {
       videoRef.current.currentTime = 0;
     }
+
+    videoRef.current.muted = isMuted;
 
     videoRef.current
       .play()
@@ -41,6 +47,7 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
         console.warn("Unmuted playback failed, attempting muted playback:", err);
         if (videoRef.current) {
           videoRef.current.muted = true;
+          setIsMuted(true);
           videoRef.current
             .play()
             .then(() => {
@@ -56,7 +63,10 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
   };
 
   const handlePause = (e) => {
-    if (e) e.stopPropagation();
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
     if (videoRef.current) {
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
@@ -65,12 +75,26 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
   };
 
   const togglePlay = (e) => {
-    if (e) e.stopPropagation();
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
     if (isPlaying) {
       handlePause(e);
     } else {
       handlePlay(e);
     }
+  };
+
+  const toggleMute = (e) => {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+    if (!videoRef.current) return;
+    const nextMuted = !videoRef.current.muted;
+    videoRef.current.muted = nextMuted;
+    setIsMuted(nextMuted);
   };
 
   useEffect(() => {
@@ -84,9 +108,23 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
 
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    // ── Bounding box cache ──
+    // ── Bounding box cache & Anchor Coordinate Cache (prevents forced reflow in loop) ──
+    let anchorPos = { x: 0, y: 0 };
+    let hookRestPos = { x: 0, y: 72 };
+
     const updateBounds = () => {
       boundsRef.current = card.getBoundingClientRect();
+      const cRect = container.getBoundingClientRect();
+      const aRect = anchorEl.getBoundingClientRect();
+      const hRect = hookRingEl.getBoundingClientRect();
+      anchorPos = {
+        x: aRect.left + aRect.width / 2 - cRect.left,
+        y: aRect.bottom - cRect.top,
+      };
+      hookRestPos = {
+        x: hRect.left + hRect.width / 2 - cRect.left,
+        y: hRect.top + 2 - cRect.top,
+      };
     };
     updateBounds();
 
@@ -143,19 +181,12 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
     let lastTime = performance.now();
     let animFrameId = null;
 
-    // ── SVG Rope Update (Strictly in container local coordinates) ──
-    const updateRope = () => {
-      const cRect = container.getBoundingClientRect();
-      const aRect = anchorEl.getBoundingClientRect();
-      const hRect = hookRingEl.getBoundingClientRect();
-
-      // Start point: bottom-center of top fixed anchor mount
-      const ax = aRect.left + aRect.width / 2 - cRect.left;
-      const ay = aRect.bottom - cRect.top;
-
-      // End point: top-center of hook metal ring O
-      const bx = hRect.left + hRect.width / 2 - cRect.left;
-      const by = hRect.top + 2 - cRect.top;
+    // ── SVG Rope Update (Using cached anchor coordinates to eliminate 3x getBoundingClientRect per frame) ──
+    const updateRope = (tx = 0, ty = 0) => {
+      const ax = anchorPos.x;
+      const ay = anchorPos.y;
+      const bx = hookRestPos.x + tx;
+      const by = hookRestPos.y + ty;
 
       const dx = bx - ax;
       const dy = by - ay;
@@ -412,11 +443,32 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
       const translateY = cardY + scrollOffsetY;
       cardAssembly.style.transform = `translate3d(${translateX.toFixed(1)}px, ${translateY.toFixed(1)}px, 0) rotateZ(${totalAngle.toFixed(2)}deg) rotateX(${tiltX.toFixed(2)}deg) rotateY(${tiltY.toFixed(2)}deg)`;
 
-      // 6. Redraw dynamic SVG lanyard rope
-      updateRope();
+      // 6. Redraw dynamic SVG lanyard rope without layout reflows
+      updateRope(translateX, translateY);
 
       animFrameId = requestAnimationFrame(physicsLoop);
     };
+
+    // Viewport-aware animation control: pause physics when card is far out of view
+    let isVisible = true;
+    const visibilityObserver = new IntersectionObserver(
+      ([entry]) => {
+        isVisible = entry.isIntersecting;
+        if (isVisible) {
+          lastTime = performance.now();
+          if (!animFrameId) {
+            animFrameId = requestAnimationFrame(physicsLoop);
+          }
+        } else {
+          if (animFrameId) {
+            cancelAnimationFrame(animFrameId);
+            animFrameId = null;
+          }
+        }
+      },
+      { threshold: 0 }
+    );
+    visibilityObserver.observe(container);
 
     animFrameId = requestAnimationFrame(physicsLoop);
 
@@ -428,6 +480,7 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
       window.removeEventListener("scroll", handleScroll);
       card.removeEventListener("pointerdown", handlePointerDown);
       container.removeEventListener("mouseleave", handleMouseLeave);
+      visibilityObserver.disconnect();
       if (resizeObserver) resizeObserver.disconnect();
       if (animFrameId) cancelAnimationFrame(animFrameId);
     };
@@ -713,6 +766,7 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
               <video
                 ref={videoRef}
                 src="/My_video.mp4"
+                muted={isMuted}
                 playsInline
                 preload="metadata"
                 onPlay={() => setIsPlaying(true)}
@@ -813,6 +867,7 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
             className="border-t border-[var(--border)] flex items-center justify-between"
             style={{ marginTop: "16px", paddingTop: "12px" }}
           >
+            {/* Barcode */}
             <div
               className="flex items-end h-4"
               style={{ gap: "2px" }}
@@ -829,9 +884,50 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
               <span className="w-[1px] h-2 bg-[var(--muted)]" />
               <span className="w-[3px] h-full bg-[var(--muted)]" />
             </div>
-            <span className="font-mono text-[10px] text-[var(--dim)] tracking-widest">
-              HK-2026-DEV
-            </span>
+
+            {/* Video Play & Mute Controls (Placed right where the user indicated) */}
+            <div
+              className="flex items-center gap-2"
+              onPointerDown={(e) => e.stopPropagation()}
+            >
+              {!hasVideoError && (
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={togglePlay}
+                    onPointerDown={(e) => e.stopPropagation()}
+                    className="w-6 h-6 rounded flex items-center justify-center border border-[var(--border)] bg-[var(--surface-hover)]/60 text-[var(--muted)] hover:text-[var(--accent)] hover:border-[var(--accent)] transition-colors cursor-pointer"
+                    aria-label={isPlaying ? "Pause video" : "Play video"}
+                    title={isPlaying ? "Pause video" : "Play video"}
+                  >
+                    {isPlaying ? (
+                      <Pause size={10} className="fill-current text-[var(--accent)]" />
+                    ) : (
+                      <Play size={10} className="fill-current text-[var(--accent)] translate-x-0.5" />
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={toggleMute}
+                    onPointerDown={(e) => e.stopPropagation()}
+                    className="w-6 h-6 rounded flex items-center justify-center border border-[var(--border)] bg-[var(--surface-hover)]/60 text-[var(--muted)] hover:text-[var(--accent)] hover:border-[var(--accent)] transition-colors cursor-pointer"
+                    aria-label={isMuted ? "Unmute video" : "Mute video"}
+                    title={isMuted ? "Unmute video" : "Mute video"}
+                  >
+                    {isMuted ? (
+                      <VolumeX size={11} className="text-[var(--muted)] hover:text-[var(--accent)]" />
+                    ) : (
+                      <Volume2 size={11} className="text-[var(--accent)]" />
+                    )}
+                  </button>
+                </div>
+              )}
+
+              <span className="font-mono text-[10px] text-[var(--dim)] tracking-widest">
+                HK-2026-DEV
+              </span>
+            </div>
           </div>
         </div>
       </div>

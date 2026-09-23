@@ -8,7 +8,6 @@ const TECH_ITEMS = TECHNOLOGY_CONFIG;
 export default function FooterPhysics() {
   const sceneRef = useRef(null);
   const elementsContainerRef = useRef(null);
-  const [activeCount, setActiveCount] = useState(0);
 
   useEffect(() => {
     const scene = sceneRef.current;
@@ -21,19 +20,22 @@ export default function FooterPhysics() {
 
     const { Engine, Runner, Bodies, Composite, Mouse, MouseConstraint, Events, Body } = Matter;
 
-    // 1. Matter Engine with balanced gravity
+    const isMobile = window.innerWidth < 768;
+    const width = scene.clientWidth;
+    const height = scene.clientHeight;
+
+    // 1. Matter Engine with sleeping enabled and mobile-tuned iterations
     const engine = Engine.create({
-      enableSleeping: false,
-      gravity: { x: 0, y: 0.85, scale: 0.001 }
+      enableSleeping: true,
+      gravity: { x: 0, y: 0.85, scale: 0.001 },
+      positionIterations: isMobile ? 4 : 6,
+      velocityIterations: isMobile ? 3 : 4
     });
 
     const runner = Runner.create();
     let isRunning = false;
+    let hasSpawned = false;
     const timeoutIds = [];
-
-    const isMobile = window.innerWidth < 640;
-    const width = scene.clientWidth;
-    const height = scene.clientHeight;
 
     // 2. Invisible Physical Boundaries (Floor, Left, Right, Ceiling)
     const wallOptions = { isStatic: true, friction: 0.3, restitution: 0.4 };
@@ -65,7 +67,7 @@ export default function FooterPhysics() {
       el.style.height = `${itemHeight}px`;
       el.style.left = '0px';
       el.style.top = '0px';
-      el.style.willChange = 'transform, opacity';
+      el.style.willChange = 'transform';
       el.style.touchAction = 'none';
 
       el.innerHTML = `
@@ -102,7 +104,7 @@ export default function FooterPhysics() {
         y: 1.5 + Math.random() * 1.5
       });
 
-      bodiesWithElements.push({ body, el });
+      bodiesWithElements.push({ body, el, isVisible: false, hasSettled: false });
     });
 
     // 4. Mouse and Touch Drag Constraint
@@ -118,11 +120,11 @@ export default function FooterPhysics() {
 
     Composite.add(engine.world, mouseConstraint);
 
-    // 5. Self-Righting Torque: keeps pills upright so text is never inverted!
+    // 5. Self-Righting Torque: keeps pills upright so text is never inverted (skips sleeping bodies)
     Events.on(engine, 'beforeUpdate', () => {
       for (let i = 0; i < bodiesWithElements.length; i++) {
         const { body } = bodiesWithElements[i];
-        // Self-righting spring torque towards 0 radians (upright)
+        if (body.isSleeping) continue;
         const currentAngle = body.angle;
         const targetAngle = 0;
         const angleDiff = currentAngle - targetAngle;
@@ -130,38 +132,60 @@ export default function FooterPhysics() {
       }
     });
 
-    // 6. Sync DOM transforms from physics state
+    // 6. Sync DOM transforms from physics state (GPU translate3d, skips sleeping bodies once settled)
     Events.on(engine, 'afterUpdate', () => {
       const halfW = itemWidth / 2;
       const halfH = itemHeight / 2;
 
       for (let i = 0; i < bodiesWithElements.length; i++) {
-        const { body, el } = bodiesWithElements[i];
-        if (body.position.y > -70) {
+        const item = bodiesWithElements[i];
+        const { body, el } = item;
+
+        if (body.isSleeping && item.hasSettled) continue;
+
+        if (body.position.y > -70 && !item.isVisible) {
           el.style.opacity = '1';
+          item.isVisible = true;
         }
-        el.style.transform = `translate3d(${(body.position.x - halfW).toFixed(2)}px, ${(body.position.y - halfH).toFixed(2)}px, 0) rotate(${body.angle.toFixed(3)}rad)`;
+
+        el.style.transform = `translate3d(${(body.position.x - halfW).toFixed(1)}px, ${(body.position.y - halfH).toFixed(1)}px, 0) rotate(${body.angle.toFixed(3)}rad)`;
+
+        if (body.isSleeping) {
+          item.hasSettled = true;
+        } else {
+          item.hasSettled = false;
+        }
       }
     });
 
-    // 7. Trigger drop sequence when in viewport
+    // 7. Viewport-aware lifecycle: run drop on first view, pause engine when scrolled away
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && !isRunning) {
-          isRunning = true;
-          Runner.run(runner, engine);
+        if (entry.isIntersecting) {
+          if (!hasSpawned) {
+            hasSpawned = true;
+            isRunning = true;
+            Runner.run(runner, engine);
 
-          bodiesWithElements.forEach(({ body }, idx) => {
-            const delay = isMobile ? idx * 75 : idx * 120;
-            const tid = setTimeout(() => {
-              Composite.add(engine.world, body);
-              setActiveCount((prev) => prev + 1);
-            }, delay);
-            timeoutIds.push(tid);
-          });
+            bodiesWithElements.forEach(({ body }, idx) => {
+              const delay = isMobile ? idx * 60 : idx * 100;
+              const tid = setTimeout(() => {
+                Composite.add(engine.world, body);
+              }, delay);
+              timeoutIds.push(tid);
+            });
+          } else if (!isRunning) {
+            isRunning = true;
+            Runner.run(runner, engine);
+          }
+        } else {
+          if (isRunning) {
+            Runner.stop(runner);
+            isRunning = false;
+          }
         }
       },
-      { threshold: 0.2 }
+      { threshold: 0.15 }
     );
 
     observer.observe(scene);
@@ -191,14 +215,13 @@ export default function FooterPhysics() {
       });
     };
   }, []);
-
   return (
     <div className="relative w-full" style={{ marginTop: "32px", marginBottom: "32px" }}>
       {/* Sandbox Container */}
       <div
         ref={sceneRef}
         className="relative w-full h-[460px] sm:h-[260px] rounded-2xl border border-[var(--border)] bg-[var(--surface)]/40 overflow-hidden shadow-inner"
-        style={{ touchAction: 'none' }}
+        style={{ touchAction: 'pan-y' }}
         aria-label="Interactive technology physics sandbox"
       >
         {/* Header Hint */}
