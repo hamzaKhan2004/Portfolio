@@ -3,11 +3,7 @@ import { profile } from "../data/portfolioData";
 import { Sun, Moon, ArrowUpRight, Menu, X } from "lucide-react";
 import MagneticButton from "./MagneticButton";
 
-export default function Navbar({
-  isDark,
-  onToggleTheme,
-  onNavigateWithTransition,
-}) {
+export default function Navbar({ isDark, onToggleTheme }) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -22,18 +18,9 @@ export default function Navbar({
   const handleLinkClick = (e, targetId) => {
     e.preventDefault();
     setMobileMenuOpen(false);
-    if (onNavigateWithTransition) {
-      onNavigateWithTransition(() => {
-        const target = document.getElementById(targetId);
-        if (target) {
-          target.scrollIntoView({ behavior: "smooth" });
-        }
-      });
-    } else {
-      const target = document.getElementById(targetId);
-      if (target) {
-        target.scrollIntoView({ behavior: "smooth" });
-      }
+    const target = document.getElementById(targetId);
+    if (target) {
+      target.scrollIntoView({ behavior: "smooth" });
     }
   };
 

@@ -25,7 +25,7 @@ export default function Preloader({ onBootComplete, onComplete }) {
     const content = contentRef.current;
     if (!container || !content) return;
 
-    // Fast, high-tech booting sequence (~200ms per step, ~600ms to ready)
+    // System boot sequence tuned to 240ms per step (~720ms to reach ready state)
     const stepInterval = setInterval(() => {
       setStepIndex((prev) => {
         if (prev < BOOT_STEPS.length - 1) {
@@ -34,30 +34,27 @@ export default function Preloader({ onBootComplete, onComplete }) {
         clearInterval(stepInterval);
         return prev;
       });
-    }, 200);
+    }, 240);
 
     const timer = setTimeout(() => {
-      // 1. Notify that boot is complete so ID card begins entry transition
       if (onBootComplete) onBootComplete();
 
-      // 2. Fade out boot UI content
       gsap.to(content, {
         opacity: 0,
         scale: 0.96,
-        duration: 0.22,
+        duration: 0.24,
         ease: 'power2.in'
       });
 
-      // 3. Smoothly dissolve preloader backdrop
       gsap.to(container, {
         opacity: 0,
-        duration: 0.32,
+        duration: 0.34,
         ease: 'power2.inOut',
         onComplete: () => {
           onComplete();
         }
       });
-    }, 800);
+    }, 960);
 
     return () => {
       clearInterval(stepInterval);
@@ -76,7 +73,6 @@ export default function Preloader({ onBootComplete, onComplete }) {
         className="text-center flex flex-col items-center"
         style={{ paddingLeft: "24px", paddingRight: "24px" }}
       >
-        {/* Brand Monogram */}
         <div className="flex items-center justify-center gap-3">
           <span className="font-sans font-extrabold text-3xl sm:text-4xl tracking-tighter text-[var(--foreground)]">
             {profile.initials}
@@ -86,7 +82,6 @@ export default function Preloader({ onBootComplete, onComplete }) {
           </span>
         </div>
 
-        {/* System Boot Badge */}
         <div
           className="inline-flex items-center justify-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)]"
           style={{
@@ -110,7 +105,6 @@ export default function Preloader({ onBootComplete, onComplete }) {
           </span>
         </div>
 
-        {/* Identity */}
         <div>
           <h2 className="font-sans font-semibold text-lg sm:text-xl tracking-tight text-[var(--foreground)]">
             {profile.name.toUpperCase()}
@@ -120,7 +114,6 @@ export default function Preloader({ onBootComplete, onComplete }) {
           </p>
         </div>
 
-        {/* Step Indicator */}
         <div className="flex flex-col items-center gap-2.5" style={{ paddingTop: "20px" }}>
           <div
             className={`font-mono text-xs tracking-wider h-5 transition-colors duration-200 ${

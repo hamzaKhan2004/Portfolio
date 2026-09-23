@@ -8,7 +8,6 @@ import Projects from "./components/Projects";
 import Skills from "./components/Skills";
 import GravityFooter from "./components/GravityFooter";
 import CustomCursor from "./components/CustomCursor";
-import PageTransition from "./animations/PageTransition";
 import ProjectModal from "./components/ProjectModal";
 
 import "./styles/index.css";
@@ -21,11 +20,9 @@ export default function App() {
   const [introPhase, setIntroPhase] = useState("booting");
   const [isDark, setIsDark] = useState(true);
   const [selectedProject, setSelectedProject] = useState(null);
-  const [isTransitioning, setIsTransitioning] = useState(false);
 
-  // Intro transition choreography callbacks
   const handleBootComplete = useCallback(() => {
-    setIntroPhase("revealing-card");
+    setIntroPhase("revealing");
   }, []);
 
   const handlePreloaderComplete = useCallback(() => {
@@ -33,13 +30,9 @@ export default function App() {
   }, []);
 
   const handleIntroSettled = useCallback(() => {
-    setIntroPhase("revealing-home");
-    setTimeout(() => {
-      setIntroPhase("ready");
-    }, 480);
+    setIntroPhase("ready");
   }, []);
 
-  // Sync Dark/Light theme class on root document
   useEffect(() => {
     const root = document.documentElement;
     if (isDark) {
@@ -59,15 +52,6 @@ export default function App() {
     setIsDark((prev) => !prev);
   }, []);
 
-  // Snappy tile transition exclusively for explicit section navigation
-  const handleNavigateWithTransition = useCallback((callback) => {
-    setIsTransitioning(true);
-    setTimeout(() => {
-      if (callback) callback();
-    }, 240);
-  }, []);
-
-  // Direct modal opening (eliminates double-transition conflict)
   const handleOpenProject = useCallback((project) => {
     setSelectedProject(project);
   }, []);
@@ -78,13 +62,9 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] selection:bg-[var(--accent)] selection:text-[var(--accent-foreground)] relative">
-      {/* Subtle Texture Grain Overlay */}
       <div className="noise-overlay" aria-hidden="true" />
-
-      {/* Subtle Desktop Custom Pointer */}
       <CustomCursor />
 
-      {/* High-Tech Booting Loader (Only runs once on initial load) */}
       {isLoading && (
         <Preloader
           onBootComplete={handleBootComplete}
@@ -92,35 +72,21 @@ export default function App() {
         />
       )}
 
-      {/* Fast, GPU-Accelerated Tile Page Transition */}
-      <PageTransition
-        isActive={isTransitioning}
-        onTransitionComplete={() => setIsTransitioning(false)}
-      />
-
-      {/* Minimal Header */}
       <div
         id="navbar-wrapper"
         style={{
-          opacity: introPhase === "booting" || introPhase === "revealing-card" ? 0 : 1,
+          opacity: introPhase === "booting" ? 0 : 1,
           transform:
-            introPhase === "booting" || introPhase === "revealing-card"
-              ? "translate3d(0, -10px, 0)"
-              : "none",
+            introPhase === "booting" ? "translate3d(0, -10px, 0)" : "none",
           transition:
-            introPhase === "revealing-home" || introPhase === "ready"
-              ? "opacity 0.4s ease-out, transform 0.4s ease-out"
+            introPhase === "revealing" || introPhase === "ready"
+              ? "opacity 0.5s ease-out, transform 0.5s ease-out"
               : "none",
         }}
       >
-        <Navbar
-          isDark={isDark}
-          onToggleTheme={toggleTheme}
-          onNavigateWithTransition={handleNavigateWithTransition}
-        />
+        <Navbar isDark={isDark} onToggleTheme={toggleTheme} />
       </div>
 
-      {/* Core Editorial Experience: HOME -> ABOUT -> WORK -> STACK */}
       <main id="main-content">
         <Hero introPhase={introPhase} onIntroSettled={handleIntroSettled} />
         <About />
@@ -128,10 +94,8 @@ export default function App() {
         <Skills />
       </main>
 
-      {/* Integrated Contact & 2D Matter.js Physics Sandbox Footer */}
       <GravityFooter />
 
-      {/* Isolated Architectural Deep-Dive Project Modal */}
       {selectedProject && (
         <ProjectModal project={selectedProject} onClose={handleCloseProject} />
       )}

@@ -18,6 +18,8 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
   const accentPathRef = useRef(null);
   const videoRef = useRef(null);
   const impulseRef = useRef(false);
+  const scanLineRef = useRef(null);
+  const scanTriggeredRef = useRef(false);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [hasVideoError, setHasVideoError] = useState(false);
@@ -389,7 +391,7 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
       // Damped pendulum oscillation
       if (impulseRef.current) {
         impulseRef.current = false;
-        swingVelocity += 0.55;
+        swingVelocity += 0.35;
       }
       const swingForce = -PENDULUM_K * swingAngle;
       swingVelocity = (swingVelocity + swingForce) * PENDULUM_DAMP;
@@ -431,7 +433,7 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
     };
   }, []);
 
-  // ── Intro Reveal Animation Coordination ──
+  // Physical entrance and one-time verification scan sequence
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -439,36 +441,70 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       container.style.opacity = "1";
       container.style.transform = "none";
+      if (scanLineRef.current) scanLineRef.current.style.display = "none";
       if (onIntroSettled) onIntroSettled();
       return;
     }
 
     if (introPhase === "booting") {
       container.style.opacity = "0";
-      container.style.transform = "translate3d(0, -65px, 0)";
-    } else if (introPhase === "revealing-card") {
-      // Impart subtle impulse to lanyard simulation so strap and card have tactile sway
+      container.style.transform = "translate3d(0, -20px, 0)";
+    } else if (introPhase === "revealing") {
       impulseRef.current = true;
 
-      gsap.fromTo(
-        container,
-        { opacity: 0, y: -65 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.65,
-          ease: "back.out(1.6)",
-          onComplete: () => {
-            if (container) {
-              gsap.set(container, { clearProps: "transform" });
-            }
-            if (onIntroSettled) onIntroSettled();
-          },
+      // Subtle spring/settle: translateY(-20px) -> translateY(6px) -> translateY(-2px) -> translateY(0)
+      gsap.timeline({
+        onComplete: () => {
+          if (container) gsap.set(container, { clearProps: "transform" });
+          if (onIntroSettled) onIntroSettled();
         }
-      );
+      })
+      .set(container, { opacity: 1 })
+      .to(container, {
+        y: 6,
+        duration: 0.3,
+        ease: "power2.out"
+      })
+      .to(container, {
+        y: -2,
+        duration: 0.18,
+        ease: "sine.inOut"
+      })
+      .to(container, {
+        y: 0,
+        duration: 0.16,
+        ease: "power2.out"
+      });
+
+      // Subtle technical verification scan: travels down once across card
+      if (scanLineRef.current && !scanTriggeredRef.current) {
+        scanTriggeredRef.current = true;
+        gsap.timeline({ delay: 0.12 })
+          .fromTo(
+            scanLineRef.current,
+            { top: "0%", opacity: 0 },
+            { opacity: 0.85, duration: 0.1, ease: "power1.in" }
+          )
+          .to(scanLineRef.current, {
+            top: "100%",
+            duration: 0.52,
+            ease: "power1.inOut"
+          })
+          .to(scanLineRef.current, {
+            opacity: 0,
+            duration: 0.1,
+            ease: "power1.out",
+            onComplete: () => {
+              if (scanLineRef.current) {
+                scanLineRef.current.style.display = "none";
+              }
+            }
+          });
+      }
     } else if (introPhase === "ready") {
       container.style.opacity = "1";
       gsap.set(container, { clearProps: "transform" });
+      if (scanLineRef.current) scanLineRef.current.style.display = "none";
     }
   }, [introPhase, onIntroSettled]);
 
@@ -590,14 +626,25 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
             touchAction: "none",
           }}
         >
-          {/* Specular Glare Layer */}
           <div
             ref={glareRef}
             className="absolute inset-0 pointer-events-none transition-opacity duration-300 z-30"
             aria-hidden="true"
           />
 
-          {/* Top Punch Hole */}
+          {/* Technical Verification Scan Line (single sweep on entrance) */}
+          <div
+            ref={scanLineRef}
+            className="absolute left-0 right-0 pointer-events-none z-30 opacity-0"
+            style={{
+              height: "2px",
+              background: "linear-gradient(90deg, transparent 0%, var(--accent) 50%, transparent 100%)",
+              boxShadow: "0 0 10px 1px var(--accent)",
+              top: 0,
+            }}
+            aria-hidden="true"
+          />
+
           <div
             className="w-9 h-2.5 rounded-full bg-[var(--background)] border border-[var(--border)] shadow-inner"
             style={{
@@ -607,7 +654,6 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
             }}
           />
 
-          {/* Card Header: Monogram & Verified Badge */}
           <div
             className="flex items-center justify-between border-b border-[var(--border)]"
             style={{ paddingBottom: "14px" }}
@@ -638,7 +684,6 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
             </div>
           </div>
 
-          {/* Portrait Photo & Video Media Area */}
           <div
             className="relative overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--background)] shadow-sm h-56 group cursor-pointer"
             style={{ marginTop: "20px", marginBottom: "20px" }}
@@ -734,7 +779,6 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
             )}
           </div>
 
-          {/* Card Typography & Details */}
           <div className="space-y-2.5">
             <div>
               <h3 className="font-sans font-semibold text-xl text-[var(--foreground)] tracking-tight">
@@ -765,7 +809,6 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
             </div>
           </div>
 
-          {/* Barcode Identifier */}
           <div
             className="border-t border-[var(--border)] flex items-center justify-between"
             style={{ marginTop: "16px", paddingTop: "12px" }}

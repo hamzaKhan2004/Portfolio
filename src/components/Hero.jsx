@@ -28,14 +28,14 @@ export default function Hero({ introPhase = "ready", onIntroSettled }) {
       return;
     }
 
-    if (introPhase === "booting" || introPhase === "revealing-card") {
+    if (introPhase === "booting") {
       el.style.opacity = "0";
       el.style.transform = "translate3d(0, 14px, 0)";
-    } else if (introPhase === "revealing-home") {
+    } else if (introPhase === "revealing") {
       gsap.to(el, {
         opacity: 1,
         y: 0,
-        duration: 0.45,
+        duration: 0.6,
         ease: "power2.out",
         clearProps: "transform",
       });
@@ -60,9 +60,7 @@ export default function Hero({ introPhase = "ready", onIntroSettled }) {
 
       <div className="editorial-container relative z-20 w-full">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-14 lg:gap-20 items-center">
-          {/* Editorial Left Column */}
           <div ref={heroContentRef} className="lg:col-span-7 flex flex-col justify-center">
-            {/* Status & Location Line */}
             <div
               className="flex flex-wrap items-center gap-3"
               style={{ marginBottom: "32px" }}
@@ -80,7 +78,6 @@ export default function Hero({ introPhase = "ready", onIntroSettled }) {
               </span>
             </div>
 
-            {/* Monumental Editorial Headline */}
             <div style={{ marginBottom: "32px" }}>
               <div style={{ marginBottom: "12px" }}>
                 <h1 className="font-sans font-bold text-5xl sm:text-7xl lg:text-[5.4rem] leading-[0.94] tracking-tighter text-[var(--foreground)]">
@@ -96,7 +93,6 @@ export default function Hero({ introPhase = "ready", onIntroSettled }) {
               </p>
             </div>
 
-            {/* Clear, Readable Biography */}
             <p
               className="text-lg sm:text-xl text-[var(--muted)] leading-relaxed max-w-[62ch]"
               style={{ marginBottom: "40px" }}
@@ -104,7 +100,6 @@ export default function Hero({ introPhase = "ready", onIntroSettled }) {
               {profile.bio}
             </p>
 
-            {/* Targeted Magnetic CTA Buttons */}
             <div className="flex flex-wrap items-center gap-5">
               <MagneticButton
                 href="#work"
@@ -125,7 +120,6 @@ export default function Hero({ introPhase = "ready", onIntroSettled }) {
               </MagneticButton>
             </div>
 
-            {/* Subtle Pointer Hint */}
             <div className="hidden sm:block" style={{ marginTop: "64px" }}>
               <span className="font-mono text-xs text-[var(--dim)] tracking-wider">
                 // MOVE CURSOR ACROSS VIEWPORT TO RELEASE TECHNOLOGY LOGOS
@@ -133,7 +127,6 @@ export default function Hero({ introPhase = "ready", onIntroSettled }) {
             </div>
           </div>
 
-          {/* Editorial Right Column: Physical Lanyard ID Card */}
           <div className="lg:col-span-5 flex justify-center lg:justify-end">
             <IdCard introPhase={introPhase} onIntroSettled={onIntroSettled} />
           </div>
