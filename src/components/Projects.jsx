@@ -250,28 +250,32 @@ export default function Projects({ onSelectProject }) {
         {/* Mobile View: Rolling Stacked Cards (Physical stack shuffle with complete screenshots) */}
         <div className="block lg:hidden relative" style={{ marginTop: "24px" }}>
           {projects.map((proj, idx) => {
+            const isLast = idx === projects.length - 1;
+            const baseTop = 64;
+            const stackOffset = 38;
+
             return (
               <article
                 key={proj.id}
                 className="w-full rounded-2xl border border-[var(--border-strong)] bg-[var(--surface)] shadow-2xl overflow-hidden transition-all duration-300"
                 style={{
                   position: "sticky",
-                  top: `${72 + idx * 64}px`,
+                  top: `${baseTop + idx * stackOffset}px`,
                   zIndex: idx + 10,
-                  marginBottom: idx === projects.length - 1 ? "0px" : "32px",
-                  padding: "20px",
+                  marginBottom: isLast ? "calc(min(300px, 45vh) + 32px)" : "min(280px, 42vh)",
+                  padding: "16px",
                   boxShadow: "0 -8px 30px rgba(0, 0, 0, 0.5), 0 0 1px 1px var(--border-strong)"
                 }}
               >
                 {/* Header: Project Number, Title & Deep Dive Button */}
-                <div className="flex items-center justify-between border-b border-[var(--border)]" style={{ paddingBottom: "14px" }}>
-                  <div className="flex items-center gap-3">
-                    <span className="font-mono text-lg font-bold text-[var(--accent)]">
+                <div className="flex items-center justify-between border-b border-[var(--border)]" style={{ paddingBottom: "10px" }}>
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className="font-mono text-base font-bold text-[var(--accent)] shrink-0">
                       {proj.id}
                     </span>
                     <h3
                       onClick={() => onSelectProject(proj)}
-                      className="font-sans font-bold text-xl text-[var(--foreground)] tracking-tight cursor-pointer"
+                      className="font-sans font-bold text-lg text-[var(--foreground)] tracking-tight cursor-pointer truncate"
                     >
                       {proj.title}
                     </h3>
@@ -280,7 +284,7 @@ export default function Projects({ onSelectProject }) {
                   <button
                     type="button"
                     onClick={() => onSelectProject(proj)}
-                    className="inline-flex items-center gap-1 font-mono text-[11px] text-[var(--accent)] hover:underline cursor-pointer"
+                    className="inline-flex items-center gap-1 font-mono text-[11px] text-[var(--accent)] hover:underline cursor-pointer shrink-0"
                     style={{ padding: "4px 8px" }}
                   >
                     <Layers size={13} />
@@ -291,7 +295,7 @@ export default function Projects({ onSelectProject }) {
                 {/* Project Screenshot Frame (Consistent responsive aspect ratio, full cover, no distortion) */}
                 <div
                   className="relative aspect-[16/10] rounded-xl overflow-hidden border border-[var(--border)] bg-[var(--background)] w-full flex items-center justify-center cursor-pointer"
-                  style={{ marginTop: "16px", marginBottom: "16px" }}
+                  style={{ marginTop: "12px", marginBottom: "12px" }}
                   onClick={() => onSelectProject(proj)}
                 >
                   <img
@@ -302,25 +306,43 @@ export default function Projects({ onSelectProject }) {
                   />
                 </div>
 
-                {/* Description */}
-                <p className="text-sm text-[var(--muted)] leading-relaxed" style={{ marginBottom: "14px" }}>
-                  {proj.description}
+                {/* Compact Description (2–3 lines preview; full description in modal) */}
+                <p
+                  className="text-xs sm:text-sm text-[var(--muted)] leading-relaxed"
+                  style={{
+                    marginBottom: "10px",
+                    display: "-webkit-box",
+                    WebkitLineClamp: 3,
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden"
+                  }}
+                >
+                  {proj.shortDescription || proj.description}
                 </p>
 
-                {/* Tags */}
-                <div className="font-mono text-[11px] text-[var(--dim)] tracking-wide" style={{ marginBottom: "18px" }}>
+                {/* Tech Stack */}
+                <div
+                  className="font-mono text-[11px] text-[var(--dim)] tracking-wide"
+                  style={{
+                    marginBottom: "12px",
+                    display: "-webkit-box",
+                    WebkitLineClamp: 1,
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden"
+                  }}
+                >
                   {proj.tags.join('   ·   ')}
                 </div>
 
-                {/* Action Buttons (Always accessible, clear inline-style spacing, never covered) */}
-                <div className="flex flex-wrap items-center gap-2.5 border-t border-[var(--border)]" style={{ paddingTop: "14px" }}>
+                {/* Action Buttons: Live Application, Repository, and Read More */}
+                <div className="flex flex-wrap items-center gap-2 border-t border-[var(--border)]" style={{ paddingTop: "12px" }}>
                   {proj.demoLink && (
                     <MagneticButton
                       href={proj.demoLink}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1.5 font-mono text-xs text-[var(--foreground)] hover:text-[var(--accent)] transition-colors rounded border border-[var(--border)] hover:border-[var(--accent)]"
-                      style={{ paddingLeft: "12px", paddingRight: "12px", paddingTop: "8px", paddingBottom: "8px" }}
+                      style={{ paddingLeft: "10px", paddingRight: "10px", paddingTop: "6px", paddingBottom: "6px" }}
                     >
                       <ExternalLink size={12} className="text-[var(--accent)]" />
                       <span>LIVE APPLICATION</span>
@@ -333,12 +355,22 @@ export default function Projects({ onSelectProject }) {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1.5 font-mono text-xs text-[var(--muted)] hover:text-[var(--foreground)] transition-colors rounded border border-[var(--border)] hover:border-[var(--foreground)]"
-                      style={{ paddingLeft: "12px", paddingRight: "12px", paddingTop: "8px", paddingBottom: "8px" }}
+                      style={{ paddingLeft: "10px", paddingRight: "10px", paddingTop: "6px", paddingBottom: "6px" }}
                     >
                       <Github size={12} />
                       <span>REPOSITORY</span>
                     </MagneticButton>
                   )}
+
+                  <button
+                    type="button"
+                    onClick={() => onSelectProject(proj)}
+                    className="inline-flex items-center gap-1.5 font-mono text-xs text-[var(--accent)] hover:text-[var(--foreground)] transition-colors rounded border border-[var(--border)] hover:border-[var(--accent)] cursor-pointer"
+                    style={{ paddingLeft: "10px", paddingRight: "10px", paddingTop: "6px", paddingBottom: "6px" }}
+                  >
+                    <Layers size={12} />
+                    <span>READ MORE</span>
+                  </button>
                 </div>
               </article>
             );
