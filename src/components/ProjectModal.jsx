@@ -149,33 +149,15 @@ export default function ProjectModal({ project, onClose }) {
 
         {/* Large Screenshot Frame */}
         <div
-          className="rounded-xl overflow-hidden border border-[var(--border-strong)] bg-[var(--surface)] shadow-2xl w-full"
-          style={{
-            padding: "12px",
-            minHeight: "600px",
-            maxHeight: "none",
-          }}
+          className="rounded-xl overflow-hidden border border-[var(--border-strong)] bg-[var(--surface)] shadow-2xl w-full shrink-0"
+          style={{ padding: "12px" }}
         >
           {/* Image Container */}
-          <div
-            className="rounded-lg overflow-hidden border border-[var(--border)] bg-[var(--background)] w-full flex items-center justify-center"
-            style={{
-              minHeight: "100%",
-              maxHeight: "none",
-            }}
-
-          >
+          <div className="relative aspect-[16/10] rounded-lg overflow-hidden border border-[var(--border)] bg-[var(--background)] w-full flex items-center justify-center">
             <img
               src={project.image}
               alt={project.title}
-              className="w-full object-contain"
-              style={{
-                display: "block",
-                width: "100%",
-                height: "500px",
-                maxHeight: "none",
-                objectFit: "cover",
-              }}
+              className="w-full h-full object-cover object-top"
               loading="eager"
             />
           </div>

@@ -1,19 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { profile } from "../data/portfolioData";
 import { Sun, Moon, ArrowUpRight, Menu, X } from "lucide-react";
 import MagneticButton from "./MagneticButton";
 
 export default function Navbar({ isDark, onToggleTheme }) {
-  const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 30);
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   const handleLinkClick = (e, targetId) => {
     e.preventDefault();
@@ -26,12 +17,8 @@ export default function Navbar({ isDark, onToggleTheme }) {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 h-12 ${
-        scrolled
-          ? "bg-[var(--background)]/85 backdrop-blur-md border-b border-[var(--border)]"
-          : "bg-transparent"
-      } `}
-      style={scrolled ? { paddingTop: "16px", paddingBottom: "16px" } : { paddingTop: "24px", paddingBottom: "24px" }}
+      className="fixed top-0 left-0 right-0 z-50 h-12 bg-[var(--background)]/85 backdrop-blur-md border-b border-[var(--border)]"
+      style={{ paddingTop: "16px", paddingBottom: "16px" }}
     >
       <div className="editorial-container h-full flex items-center justify-between">
         {/* Brand Mark - Larger & More Prominent */}
@@ -125,7 +112,7 @@ export default function Navbar({ isDark, onToggleTheme }) {
 
       {/* Minimal Mobile Drawer - Better Spacing */}
       {mobileMenuOpen && (
-        <div className="md:hidden fixed inset-x-0 top-full bg-[var(--background)]/98 border-b border-[var(--border)] backdrop-blur-lg shadow-2xl transition-all" style={{ paddingLeft: "24px", paddingRight: "24px", paddingTop: "48px", paddingBottom: "48px" }}>
+        <div className="md:hidden absolute inset-x-0 top-full bg-[var(--background)]/98 border-b border-[var(--border)] backdrop-blur-lg shadow-2xl transition-all" style={{ paddingLeft: "24px", paddingRight: "24px", paddingTop: "48px", paddingBottom: "48px" }}>
           <nav className="flex flex-col gap-1">
             <a
               href="#about"

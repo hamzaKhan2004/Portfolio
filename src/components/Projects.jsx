@@ -154,11 +154,14 @@ export default function Projects({ onSelectProject }) {
                   activeArticleRef.current = e.currentTarget;
                   lastMousePos.current = { x: e.clientX, y: e.clientY };
                 }}
-                onMouseLeave={(e) => {
-                  // Keep preview active if moving into the floating card or another project row
-                  if (followerRef.current && e.relatedTarget && followerRef.current.contains(e.relatedTarget)) {
-                    return;
+                onMouseMove={(e) => {
+                  lastMousePos.current = { x: e.clientX, y: e.clientY };
+                  if (hoveredProjectRef.current?.id !== proj.id) {
+                    setHoveredProject(proj);
+                    activeArticleRef.current = e.currentTarget;
                   }
+                }}
+                onMouseLeave={(e) => {
                   if (e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest('#work article')) {
                     return;
                   }
@@ -253,7 +256,7 @@ export default function Projects({ onSelectProject }) {
                 className="w-full rounded-2xl border border-[var(--border-strong)] bg-[var(--surface)] shadow-2xl overflow-hidden transition-all duration-300"
                 style={{
                   position: "sticky",
-                  top: `${72 + idx * 8}px`,
+                  top: `${72 + idx * 64}px`,
                   zIndex: idx + 10,
                   marginBottom: idx === projects.length - 1 ? "0px" : "32px",
                   padding: "20px",
@@ -285,17 +288,16 @@ export default function Projects({ onSelectProject }) {
                   </button>
                 </div>
 
-                {/* Complete Project Screenshot Frame (Full image visible, aspect ratio preserved, no crop) */}
+                {/* Project Screenshot Frame (Consistent responsive aspect ratio, full cover, no distortion) */}
                 <div
-                  className="rounded-xl overflow-hidden border border-[var(--border)] bg-[var(--background)] w-full flex items-center justify-center cursor-pointer"
-                  style={{ marginTop: "16px", marginBottom: "16px", minHeight: "180px", maxHeight: "280px" }}
+                  className="relative aspect-[16/10] rounded-xl overflow-hidden border border-[var(--border)] bg-[var(--background)] w-full flex items-center justify-center cursor-pointer"
+                  style={{ marginTop: "16px", marginBottom: "16px" }}
                   onClick={() => onSelectProject(proj)}
                 >
                   <img
                     src={proj.image}
                     alt={proj.title}
-                    className="w-full h-auto object-contain"
-                    style={{ maxHeight: "280px", display: "block" }}
+                    className="w-full h-full object-cover object-top"
                     loading="lazy"
                   />
                 </div>
@@ -354,31 +356,8 @@ export default function Projects({ onSelectProject }) {
       >
         {hoveredProject && (
           <div
-            onClick={(e) => {
-              e.stopPropagation();
-              onSelectProject(hoveredProject);
-              setHoveredProject(null);
-              activeArticleRef.current = null;
-            }}
-            onMouseLeave={(e) => {
-              if (e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest('#work article')) {
-                return;
-              }
-              setHoveredProject(null);
-              activeArticleRef.current = null;
-            }}
-            className="w-[340px] rounded-xl overflow-hidden border border-[var(--border-strong)] bg-[var(--surface)] shadow-2xl pointer-events-auto cursor-pointer transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98] select-none group/preview"
+            className="w-[340px] rounded-xl overflow-hidden border border-[var(--border-strong)] bg-[var(--surface)] shadow-2xl pointer-events-none select-none"
             style={{ padding: "12px" }}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                onSelectProject(hoveredProject);
-                setHoveredProject(null);
-                activeArticleRef.current = null;
-              }
-            }}
           >
             <div className="relative aspect-[16/10] overflow-hidden rounded-lg bg-[var(--background)] pointer-events-none">
               <img
@@ -389,7 +368,7 @@ export default function Projects({ onSelectProject }) {
               />
             </div>
             <div className="flex items-center justify-between font-mono text-xs pointer-events-none" style={{ marginTop: "12px", paddingLeft: "4px", paddingRight: "4px" }}>
-              <span className="text-[var(--foreground)] group-hover/preview:text-[var(--accent)] font-semibold truncate max-w-[200px] transition-colors">
+              <span className="text-[var(--foreground)] font-semibold truncate max-w-[200px]">
                 {hoveredProject.title}
               </span>
               <span className="text-[var(--accent)] shrink-0">
