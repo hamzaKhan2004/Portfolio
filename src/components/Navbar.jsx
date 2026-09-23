@@ -17,7 +17,7 @@ export default function Navbar({ isDark, onToggleTheme }) {
 
   return (
     <header
-      className="fixed top-0 left-0 right-0 z-50 h-12 bg-[var(--background)]/85 backdrop-blur-md border-b border-[var(--border)]"
+      className="fixed top-0 left-0 right-0 z-50 h-16 bg-[var(--background)]/85 backdrop-blur-md border-b border-[var(--border)]"
       style={{ paddingTop: "16px", paddingBottom: "16px" }}
     >
       <div className="editorial-container h-full flex items-center justify-between">

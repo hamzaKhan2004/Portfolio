@@ -231,15 +231,14 @@ export default function Projects({ onSelectProject }) {
                       </MagneticButton>
                     )}
 
-                    <button
-                      type="button"
+                    <MagneticButton
                       onClick={() => onSelectProject(proj)}
-                      className="inline-flex items-center gap-1.5 font-mono text-xs text-[var(--accent)] hover:underline cursor-pointer"
-                      style={{ paddingTop: "8px" }}
+                      className="inline-flex items-center gap-1.5 font-mono text-xs text-[var(--accent)] hover:text-[var(--foreground)] transition-colors rounded border border-[var(--accent)]/40 hover:border-[var(--accent)] bg-[var(--surface-hover)]/40 cursor-pointer"
+                      style={{ paddingLeft: "14px", paddingRight: "14px", paddingTop: "8px", paddingBottom: "8px" }}
                     >
                       <Layers size={13} />
-                      <span>DEEP DIVE</span>
-                    </button>
+                      <span>READ MORE</span>
+                    </MagneticButton>
                   </div>
                 </div>
               </article>
@@ -248,11 +247,11 @@ export default function Projects({ onSelectProject }) {
         </div>
 
         {/* Mobile View: Rolling Stacked Cards (Physical stack shuffle with complete screenshots) */}
-        <div className="block lg:hidden relative" style={{ marginTop: "24px" }}>
+        <div className="block lg:hidden relative" style={{ marginTop: "24px", paddingBottom: "min(920px, 110vh)" }}>
           {projects.map((proj, idx) => {
             const isLast = idx === projects.length - 1;
-            const baseTop = 64;
-            const stackOffset = 38;
+            const baseTop = 68;
+            const stackOffset = 50;
 
             return (
               <article
@@ -262,13 +261,13 @@ export default function Projects({ onSelectProject }) {
                   position: "sticky",
                   top: `${baseTop + idx * stackOffset}px`,
                   zIndex: idx + 10,
-                  marginBottom: isLast ? "calc(min(300px, 45vh) + 32px)" : "min(280px, 42vh)",
-                  padding: "16px",
+                  marginBottom: isLast ? "0px" : "min(260px, 38vh)",
+                  padding: "14px 16px",
                   boxShadow: "0 -8px 30px rgba(0, 0, 0, 0.5), 0 0 1px 1px var(--border-strong)"
                 }}
               >
                 {/* Header: Project Number, Title & Deep Dive Button */}
-                <div className="flex items-center justify-between border-b border-[var(--border)]" style={{ paddingBottom: "10px" }}>
+                <div className="flex items-center justify-between border-b border-[var(--border)]" style={{ paddingBottom: "8px" }}>
                   <div className="flex items-center gap-2.5 min-w-0">
                     <span className="font-mono text-base font-bold text-[var(--accent)] shrink-0">
                       {proj.id}
