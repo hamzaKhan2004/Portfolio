@@ -115,8 +115,9 @@ export default function Skills() {
 
         // Calculate focal trigger line just below the sticky featured card
         let focalY = window.innerHeight * 0.42;
+        let cardRect = null;
         if (cardRef.current) {
-          const cardRect = cardRef.current.getBoundingClientRect();
+          cardRect = cardRef.current.getBoundingClientRect();
           focalY = Math.max(cardRect.bottom + 32, window.innerHeight * 0.35);
         }
 
@@ -129,13 +130,16 @@ export default function Skills() {
 
           const rect = el.getBoundingClientRect();
 
-          // Exact match if item spans across the focal threshold
-          if (rect.top <= focalY && rect.bottom >= focalY) {
-            closestTech = tech;
-            break;
+          // Hide items that have scrolled behind or above the sticky card on mobile to prevent peeking
+          if (cardRect && rect.top <= cardRect.top + 32) {
+            el.style.opacity = '0';
+            el.style.pointerEvents = 'none';
+          } else {
+            el.style.opacity = '';
+            el.style.pointerEvents = '';
           }
 
-          // Otherwise track the item whose center is closest to focal line
+          // Track the item whose center is closest to focal line
           const itemCenter = (rect.top + rect.bottom) / 2;
           const distance = Math.abs(itemCenter - focalY);
           if (distance < minDistance) {
@@ -151,8 +155,22 @@ export default function Skills() {
       });
     };
 
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        for (const tech of TECH_STACK) {
+          const el = itemRefs.current[tech.id];
+          if (el) {
+            el.style.opacity = '';
+            el.style.pointerEvents = '';
+          }
+        }
+      } else {
+        handleScroll();
+      }
+    };
+
     window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('resize', handleScroll, { passive: true });
+    window.addEventListener('resize', handleResize, { passive: true });
 
     // Initial check on mount
     handleScroll();
@@ -160,7 +178,7 @@ export default function Skills() {
     return () => {
       if (rafId) cancelAnimationFrame(rafId);
       window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', handleScroll);
+      window.removeEventListener('resize', handleResize);
     };
   }, []);
 

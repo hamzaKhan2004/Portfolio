@@ -31,7 +31,7 @@ export default function FooterPhysics() {
     let isRunning = false;
     const timeoutIds = [];
 
-    const isMobile = window.innerWidth < 768;
+    const isMobile = window.innerWidth < 640;
     const width = scene.clientWidth;
     const height = scene.clientHeight;
 
@@ -44,10 +44,10 @@ export default function FooterPhysics() {
 
     Composite.add(engine.world, [floor, leftWall, rightWall, ceiling]);
 
-    // Select items from shared source of truth
-    const selectedTech = isMobile ? TECH_ITEMS.slice(0, 10) : TECH_ITEMS;
-    const itemWidth = isMobile ? 116 : 136;
-    const itemHeight = 38;
+    // Select items from shared source of truth - render all technologies
+    const selectedTech = TECH_ITEMS;
+    const itemWidth = isMobile ? 104 : 136;
+    const itemHeight = isMobile ? 32 : 38;
 
     const bodiesWithElements = [];
 
@@ -55,11 +55,12 @@ export default function FooterPhysics() {
     selectedTech.forEach((tech, i) => {
       const el = document.createElement('div');
       el.className =
-        'absolute cursor-grab active:cursor-grabbing select-none flex items-center justify-center gap-2.5 rounded-full border border-[var(--border-strong)] bg-[var(--surface)] text-[var(--foreground)] shadow-sm transition-shadow hover:border-[var(--accent)] hover:shadow-md opacity-0';
-      el.style.paddingLeft = '12px';
-      el.style.paddingRight = '12px';
-      el.style.paddingTop = '6px';
-      el.style.paddingBottom = '6px';
+        'absolute cursor-grab active:cursor-grabbing select-none flex items-center justify-center rounded-full border border-[var(--border-strong)] bg-[var(--surface)] text-[var(--foreground)] shadow-sm transition-shadow hover:border-[var(--accent)] hover:shadow-md opacity-0';
+      el.style.gap = isMobile ? '6px' : '10px';
+      el.style.paddingLeft = isMobile ? '8px' : '12px';
+      el.style.paddingRight = isMobile ? '8px' : '12px';
+      el.style.paddingTop = isMobile ? '4px' : '6px';
+      el.style.paddingBottom = isMobile ? '4px' : '6px';
       el.style.width = `${itemWidth}px`;
       el.style.height = `${itemHeight}px`;
       el.style.left = '0px';
@@ -71,20 +72,24 @@ export default function FooterPhysics() {
         <img
           src="${tech.icon}"
           alt="${tech.name}"
-          class="w-5 h-5 object-contain shrink-0 pointer-events-none filter brightness-110 saturate-150"
-          style="width: 20px; height: 20px; flex-shrink: 0;"
+          class="${isMobile ? 'w-4 h-4' : 'w-5 h-5'} object-contain shrink-0 pointer-events-none filter brightness-110 saturate-150"
+          style="width: ${isMobile ? '16px' : '20px'}; height: ${isMobile ? '16px' : '20px'}; flex-shrink: 0;"
         />
-        <span class="font-mono text-[11px] font-medium tracking-wide pointer-events-none text-[var(--foreground)] whitespace-nowrap">${tech.name}</span>
+        <span class="font-mono ${isMobile ? 'text-[10px]' : 'text-[11px]'} font-medium tracking-wide pointer-events-none text-[var(--foreground)] whitespace-nowrap">${tech.name}</span>
       `;
 
       elementsContainer.appendChild(el);
 
       // Staggered horizontal drop distribution
-      const spawnX = (width / (selectedTech.length + 1)) * (i + 1) + (Math.random() - 0.5) * 30;
-      const spawnY = -50;
+      const margin = itemWidth / 2 + 10;
+      const availableWidth = Math.max(10, width - margin * 2);
+      const spawnX = isMobile
+        ? margin + ((i % 4) * availableWidth) / 3 + (Math.random() - 0.5) * 16
+        : (width / (selectedTech.length + 1)) * (i + 1) + (Math.random() - 0.5) * 30;
+      const spawnY = -50 - (isMobile ? Math.floor(i / 4) * 15 : 0);
 
       const body = Bodies.rectangle(spawnX, spawnY, itemWidth, itemHeight, {
-        chamfer: { radius: 17 },
+        chamfer: { radius: isMobile ? 15 : 17 },
         restitution: 0.45,  // Controlled bounce
         friction: 0.25,
         frictionAir: 0.02,
@@ -147,10 +152,11 @@ export default function FooterPhysics() {
           Runner.run(runner, engine);
 
           bodiesWithElements.forEach(({ body }, idx) => {
+            const delay = isMobile ? idx * 75 : idx * 120;
             const tid = setTimeout(() => {
               Composite.add(engine.world, body);
               setActiveCount((prev) => prev + 1);
-            }, idx * 120);
+            }, delay);
             timeoutIds.push(tid);
           });
         }
@@ -166,6 +172,8 @@ export default function FooterPhysics() {
 
       Body.setPosition(floor, { x: newWidth / 2, y: newHeight + 25 });
       Body.setPosition(rightWall, { x: newWidth + 25, y: newHeight / 2 });
+      Body.setPosition(leftWall, { x: -25, y: newHeight / 2 });
+      Body.setPosition(ceiling, { x: newWidth / 2, y: -120 });
     };
 
     window.addEventListener('resize', handleResize);
@@ -189,7 +197,7 @@ export default function FooterPhysics() {
       {/* Sandbox Container */}
       <div
         ref={sceneRef}
-        className="relative w-full h-[220px] sm:h-[260px] rounded-2xl border border-[var(--border)] bg-[var(--surface)]/40 overflow-hidden shadow-inner"
+        className="relative w-full h-[460px] sm:h-[260px] rounded-2xl border border-[var(--border)] bg-[var(--surface)]/40 overflow-hidden shadow-inner"
         style={{ touchAction: 'none' }}
         aria-label="Interactive technology physics sandbox"
       >

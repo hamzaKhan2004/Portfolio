@@ -72,13 +72,12 @@ export default function Navbar({ isDark, onToggleTheme }) {
         </nav>
 
         {/* Right Actions: Theme Switcher & Resume & Mobile Menu Toggle */}
-        <div className="flex items-center gap-3 sm:gap-4">
-          {/* Dark / Light Mode Toggle - Larger Button */}
+        <div className="flex items-center gap-2.5 sm:gap-4">
+          {/* Dark / Light Mode Toggle */}
           <button
             type="button"
             onClick={onToggleTheme}
-            className="rounded border border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)] hover:border-[var(--accent)] transition-all cursor-pointer h-8 w-8 flex items-center justify-center "
-            style={{ padding: "8px" }}
+            className="w-10 h-10 md:w-8 md:h-8 rounded border border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)] hover:border-[var(--accent)] transition-all cursor-pointer flex items-center justify-center"
             aria-label={
               isDark ? "Switch to light theme" : "Switch to dark theme"
             }
@@ -96,16 +95,15 @@ export default function Navbar({ isDark, onToggleTheme }) {
             <ArrowUpRight size={18} className="text-[var(--accent)]" />
           </MagneticButton>
 
-          {/* Mobile Menu Button */}
+          {/* Mobile Menu Button - Same dimensions as theme toggle on mobile */}
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden rounded border border-[var(--border)] text-[var(--foreground)] hover:border-[var(--accent)] transition-colors cursor-pointer"
-            style={{ padding: "12px" }}
+            className="md:hidden w-10 h-10 rounded border border-[var(--border)] text-[var(--foreground)] hover:border-[var(--accent)] transition-colors cursor-pointer flex items-center justify-center"
             aria-label={mobileMenuOpen ? "Close Menu" : "Open Menu"}
             aria-expanded={mobileMenuOpen}
           >
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
       </div>

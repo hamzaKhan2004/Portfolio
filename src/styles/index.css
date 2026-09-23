@@ -19,17 +19,22 @@
 /* 60 / 30 / 10 Strict Color System */
 :root {
   /* DARK THEME (DEFAULT) */
-  --background: #080a0c; /* 60%: Near-black */
-  --foreground: #f4f4f0; /* 30%: Warm off-white content */
+  --background: #080a0c;
+  /* 60%: Near-black */
+  --foreground: #f4f4f0;
+  /* 30%: Warm off-white content */
   --surface: #111318;
   --surface-hover: #181b22;
-  --muted: #8e929b; /* Neutral secondary text */
-  --dim: #525660; /* Low-emphasis metadata */
+  --muted: #8e929b;
+  /* Neutral secondary text */
+  --dim: #525660;
+  /* Low-emphasis metadata */
   --border: rgba(244, 244, 240, 0.08);
   --border-strong: rgba(244, 244, 240, 0.16);
   --border-hover: rgba(184, 255, 60, 0.45);
 
-  --accent: #b8ff3c; /* 10%: Acid/electric lime */
+  --accent: #b8ff3c;
+  /* 10%: Acid/electric lime */
   --accent-foreground: #080a0c;
   --accent-dim: rgba(184, 255, 60, 0.12);
 
@@ -43,17 +48,24 @@
 
 html.light {
   /* LIGHT THEME — Softer neutral to reduce eye strain */
-  --background: #f0f0ed;       /* Warm stone-grey, not pure white */
-  --foreground: #111215;       /* Deep charcoal */
-  --surface: #e4e4e0;          /* Slightly darker surface for contrast */
-  --surface-hover: #d8d8d4;    /* Hover surface */
-  --muted: #545760;            /* Medium-contrast secondary text */
-  --dim: #86898f;              /* Low-emphasis dim text */
+  --background: #f0f0ed;
+  /* Warm stone-grey, not pure white */
+  --foreground: #111215;
+  /* Deep charcoal */
+  --surface: #e4e4e0;
+  /* Slightly darker surface for contrast */
+  --surface-hover: #d8d8d4;
+  /* Hover surface */
+  --muted: #545760;
+  /* Medium-contrast secondary text */
+  --dim: #86898f;
+  /* Low-emphasis dim text */
   --border: rgba(17, 18, 21, 0.10);
   --border-strong: rgba(17, 18, 21, 0.20);
   --border-hover: rgba(139, 197, 0, 0.45);
 
-  --accent: #6ea600;           /* Deeper olive-lime — good contrast on light bg */
+  --accent: #6ea600;
+  /* Deeper olive-lime — good contrast on light bg */
   --accent-foreground: #ffffff;
   --accent-dim: rgba(110, 166, 0, 0.13);
 }
@@ -70,7 +82,8 @@ html {
   font-family: var(--font-sans);
   background-color: var(--background);
   color: var(--foreground);
-  scroll-behavior: auto; /* Managed smoothly by Lenis */
+  scroll-behavior: auto;
+  /* Managed smoothly by Lenis */
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -104,7 +117,8 @@ body {
 /* Minimum 16px body, comfortable line-height (1.6 - 1.7), max width 55-70ch */
 p,
 .prose-body {
-  font-size: 1.05rem; /* ~17px */
+  font-size: 1.05rem;
+  /* ~17px */
   line-height: 1.68;
   color: var(--muted);
   max-width: 65ch;
@@ -127,24 +141,28 @@ h6 {
   width: 100%;
   max-width: 1360px;
   margin-inline: auto;
-  padding-inline: 1.5rem; /* px-6 */
+  padding-inline: 1.5rem;
+  /* px-6 */
 }
 
 @media (min-width: 640px) {
   .editorial-container {
-    padding-inline: 2.25rem; /* sm:px-9 */
+    padding-inline: 2.25rem;
+    /* sm:px-9 */
   }
 }
 
 @media (min-width: 1024px) {
   .editorial-container {
-    padding-inline: 3.5rem; /* lg:px-14 */
+    padding-inline: 3.5rem;
+    /* lg:px-14 */
   }
 }
 
 @media (min-width: 1280px) {
   .editorial-container {
-    padding-inline: 4.5rem; /* xl:px-18 */
+    padding-inline: 4.5rem;
+    /* xl:px-18 */
   }
 }
 
@@ -309,13 +327,16 @@ h6 {
 ::-webkit-scrollbar {
   width: 6px;
 }
+
 ::-webkit-scrollbar-track {
   background: var(--background);
 }
+
 ::-webkit-scrollbar-thumb {
   background: var(--border-strong);
   border-radius: 3px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: var(--accent);
 }
@@ -330,6 +351,7 @@ input:focus-visible {
 
 /* Prefers Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {
@@ -343,7 +365,7 @@ input:focus-visible {
 .mobile-sticky-tech {
   position: -webkit-sticky;
   position: sticky;
-  top: 68px;
+  top: 64px;
   z-index: 20;
 }
 
@@ -357,7 +379,8 @@ input:focus-visible {
 
 @media (min-width: 1024px) {
   .mobile-sticky-tech {
-    top: 7rem; /* 112px = lg:top-28 */
+    top: 7rem;
+    /* 112px = lg:top-28 */
     z-index: auto;
     background-color: transparent;
     padding-top: 0;
@@ -385,5 +408,3 @@ input:focus-visible {
     transform-origin: top center;
   }
 }
-
-
