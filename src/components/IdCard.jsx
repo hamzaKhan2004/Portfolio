@@ -516,7 +516,6 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
       style={{
         perspective: "1200px",
         paddingTop: "6px",
-        paddingBottom: "8px",
       }}
       aria-label="Hamza Akil Khan interactive physical identity card"
     >
@@ -578,9 +577,10 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
       </div>
 
       {/* Moving Card Assembly (Hook + Card as a unified physical unit) */}
-      <div
-        ref={cardAssemblyRef}
-        className="relative flex flex-col items-center select-none"
+      <div className="hero-card-scaler relative flex flex-col items-center">
+        <div
+          ref={cardAssemblyRef}
+          className="relative flex flex-col items-center select-none"
         style={{
           transformOrigin: "center top",
           willChange: "transform",
@@ -835,6 +835,7 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }
