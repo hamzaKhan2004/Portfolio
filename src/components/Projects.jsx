@@ -247,7 +247,7 @@ export default function Projects({ onSelectProject }) {
         </div>
 
         {/* Mobile View: Rolling Stacked Cards (Physical stack shuffle with complete screenshots) */}
-        <div className="block lg:hidden relative" style={{ marginTop: "24px", paddingBottom: "min(920px, 110vh)" }}>
+        <div className="block lg:hidden relative" style={{ marginTop: "24px" }}>
           {projects.map((proj, idx) => {
             const isLast = idx === projects.length - 1;
             const baseTop = 68;
@@ -374,6 +374,9 @@ export default function Projects({ onSelectProject }) {
               </article>
             );
           })}
+
+          {/* Clearance spacer allowing Card 06 to fully travel to Card 05 heading and settle cleanly before exit */}
+          <div style={{ height: "min(650px, 80vh)" }} aria-hidden="true" />
         </div>
       </div>
 

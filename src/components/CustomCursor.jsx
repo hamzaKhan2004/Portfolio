@@ -68,10 +68,29 @@ export default function CustomCursor() {
     window.addEventListener('mousedown', handleMouseDown);
     window.addEventListener('mouseup', handleMouseUp);
 
+    // Hide cursor while inside the ID card area
+    const hideForIdCard = () => {
+      if (dot) dot.style.opacity = '0';
+      if (ring) ring.style.opacity = '0';
+    };
+    const showForIdCard = () => {
+      if (dot) dot.style.opacity = '';
+      if (ring) ring.style.opacity = '';
+    };
+    const idCardEl = document.getElementById('hero-id-card-wrapper');
+    if (idCardEl) {
+      idCardEl.addEventListener('mouseenter', hideForIdCard, { passive: true });
+      idCardEl.addEventListener('mouseleave', showForIdCard, { passive: true });
+    }
+
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mousedown', handleMouseDown);
       window.removeEventListener('mouseup', handleMouseUp);
+      if (idCardEl) {
+        idCardEl.removeEventListener('mouseenter', hideForIdCard);
+        idCardEl.removeEventListener('mouseleave', showForIdCard);
+      }
     };
   }, [isEnabled]);
 

@@ -14,7 +14,7 @@ export const profile = {
   github: "https://github.com/hamzaKhan2004",
   linkedin: "https://www.linkedin.com/in/hamza-khan-47a604347",
 
-  resumeUrl: "/Hamza__Resume.pdf",
+  resumeUrl: "/Hamza_Resume.pdf?v=2026",
 
   skills: [
     "JavaScript",

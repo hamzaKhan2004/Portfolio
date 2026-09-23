@@ -221,6 +221,11 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
       // Primary button for mouse; allow primary touch on mobile
       if (e.pointerType === "mouse" && e.button !== 0) return;
 
+      // Do not start drag if the pointer originated inside a no-drag child
+      // (video area, play/mute buttons). React's stopPropagation() does not
+      // stop native addEventListener handlers, so we check the target here.
+      if (e.target.closest("[data-no-drag]")) return;
+
       isDragging = true;
       dragStartPointerX = e.clientX;
       dragStartPointerY = e.clientY;
@@ -238,7 +243,9 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
 
       card.style.cursor = "grabbing";
 
-      if (e.pointerType === "touch" && card.setPointerCapture) {
+      // Capture for ALL pointer types (mouse + touch) so pointermove/pointerup
+      // are always delivered to the card even when the cursor exits its bounds
+      if (card.setPointerCapture) {
         try {
           card.setPointerCapture(e.pointerId);
         } catch (_) {}
@@ -296,7 +303,7 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
       targetCardX = 0;
       targetCardY = 0;
       card.style.cursor = "grab";
-      if (e && e.pointerType === "touch" && card.releasePointerCapture) {
+      if (e && card.releasePointerCapture) {
         try {
           card.releasePointerCapture(e.pointerId);
         } catch (_) {}
@@ -740,6 +747,7 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
           <div
             className="relative overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--background)] shadow-sm h-56 group cursor-pointer"
             style={{ marginTop: "20px", marginBottom: "20px" }}
+            data-no-drag
             onClick={togglePlay}
             onPointerDown={(e) => e.stopPropagation()}
             role="button"
@@ -808,6 +816,7 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
             {!hasVideoError && (
               <button
                 type="button"
+                data-no-drag
                 onClick={togglePlay}
                 onPointerDown={(e) => e.stopPropagation()}
                 aria-label={isPlaying ? "Pause introduction video" : "Play introduction video"}
@@ -888,6 +897,7 @@ export default function IdCard({ introPhase = "ready", onIntroSettled }) {
             {/* Video Play & Mute Controls (Placed right where the user indicated) */}
             <div
               className="flex items-center gap-2"
+              data-no-drag
               onPointerDown={(e) => e.stopPropagation()}
             >
               {!hasVideoError && (

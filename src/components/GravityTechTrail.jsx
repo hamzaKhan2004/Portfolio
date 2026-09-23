@@ -172,6 +172,12 @@ export default function GravityTechTrail({ containerRef }) {
 
       accumulatedDistRef.current += distance;
 
+      // Do not spawn trail items while cursor is over the ID card
+      const idCard = document.getElementById("hero-id-card-wrapper");
+      if (idCard && idCard.contains(e.target)) {
+        return;
+      }
+
       /*
         THROTTLING
 

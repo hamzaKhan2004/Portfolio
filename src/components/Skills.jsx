@@ -77,14 +77,22 @@ const TECH_STACK = [
   },
   {
     id: "10",
-    name: "WebRTC",
-    icon: "/tech_icons/webrtc.svg",
-    category: "MEDIA PROTOCOL",
-    description: "RTCPeerConnection mesh protocols, ICE/SDP negotiation, and low-latency peer-to-peer media streaming.",
-    highlight: "P2P video/audio communication pipelines"
+    name: "AWS",
+    icon: "/tech_icons/aws.svg",
+    category: "CLOUD INFRASTRUCTURE",
+    description: "EC2 instances, S3 object storage, Lambda serverless functions, and scalable cloud-native deployments on AWS.",
+    highlight: "Cloud-native deployments & managed infrastructure"
   },
   {
     id: "11",
+    name: "Docker",
+    icon: "/tech_icons/docker.svg",
+    category: "CONTAINERISATION",
+    description: "Containerised application packaging, multi-stage Dockerfiles, compose orchestration, and consistent cross-environment deployments.",
+    highlight: "Isolated containers & reproducible environments"
+  },
+  {
+    id: "12",
     name: "Gemini AI",
     icon: "/tech_icons/geminiai.svg",
     category: "MULTIMODAL INTELLIGENCE",
@@ -100,87 +108,7 @@ export default function Skills() {
   const itemRefs = useRef({});
   const cardRef = useRef(null);
 
-  useEffect(() => {
-    let rafId = null;
-
-    const handleScroll = () => {
-      // Only execute scroll detection on mobile/tablet screens (< 1024px)
-      if (typeof window === 'undefined' || window.innerWidth >= 1024) return;
-
-      if (rafId) return;
-
-      rafId = requestAnimationFrame(() => {
-        rafId = null;
-        if (window.innerWidth >= 1024) return;
-
-        // Calculate focal trigger line just below the sticky featured card
-        let focalY = window.innerHeight * 0.42;
-        let cardRect = null;
-        if (cardRef.current) {
-          cardRect = cardRef.current.getBoundingClientRect();
-          focalY = Math.max(cardRect.bottom + 32, window.innerHeight * 0.35);
-        }
-
-        let closestTech = null;
-        let minDistance = Infinity;
-
-        for (const tech of TECH_STACK) {
-          const el = itemRefs.current[tech.id];
-          if (!el) continue;
-
-          const rect = el.getBoundingClientRect();
-
-          // Hide items that have scrolled behind or above the sticky card on mobile to prevent peeking
-          if (cardRect && rect.top <= cardRect.top + 32) {
-            el.style.opacity = '0';
-            el.style.pointerEvents = 'none';
-          } else {
-            el.style.opacity = '';
-            el.style.pointerEvents = '';
-          }
-
-          // Track the item whose center is closest to focal line
-          const itemCenter = (rect.top + rect.bottom) / 2;
-          const distance = Math.abs(itemCenter - focalY);
-          if (distance < minDistance) {
-            minDistance = distance;
-            closestTech = tech;
-          }
-        }
-
-        if (closestTech && closestTech.id !== activeTechIdRef.current) {
-          activeTechIdRef.current = closestTech.id;
-          setActiveTech(closestTech);
-        }
-      });
-    };
-
-    const handleResize = () => {
-      if (window.innerWidth >= 1024) {
-        for (const tech of TECH_STACK) {
-          const el = itemRefs.current[tech.id];
-          if (el) {
-            el.style.opacity = '';
-            el.style.pointerEvents = '';
-          }
-        }
-      } else {
-        handleScroll();
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('resize', handleResize, { passive: true });
-
-    // Initial check on mount
-    handleScroll();
-
-    return () => {
-      if (rafId) cancelAnimationFrame(rafId);
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
+  // No scroll-based auto-switching. Tech is changed only by hover (desktop) or click/tap (all devices).
 
   return (
     <section id="stack" className="section-spacing border-b border-[var(--border)] relative bg-[var(--background)]">
@@ -196,7 +124,7 @@ export default function Skills() {
             </h2>
           </div>
           <span className="font-mono text-xs text-[var(--dim)] tracking-wider">
-            11 CORE ARCHITECTURAL TOOLS
+            12 CORE ARCHITECTURAL TOOLS
           </span>
         </div>
 
@@ -316,7 +244,7 @@ export default function Skills() {
             })}
           </div>
 
-          {/* Mobile Bottom Runway Spacer: Ensures the last items (WebRTC, Gemini AI) can scroll fully into view below the sticky model */}
+          {/* Mobile Bottom Runway Spacer: Ensures the last items (Docker, Gemini AI) can scroll fully into view */}
           <div className="block lg:hidden" style={{ height: "140px" }} aria-hidden="true" />
         </div>
       </div>
